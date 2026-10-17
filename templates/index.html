@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web Thuật Toán Chỉnh Hợp Không Lặp</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-title">
+        <span class="badge">DT035</span>
+        <h1>Web Thuật Toán Chỉnh Hợp Không Lặp</h1>
+      </div>
+      <div class="header-author">
+        Sinh viên thực hiện: <strong>Vũ Duy Khánh (N24DCDT039)</strong>
+      </div>
+    </header>
+
+    <div class="main-layout">
+      <!-- CỘT TRÁI: CẤU HÌNH & KẾT QUẢ -->
+      <aside class="panel config-panel">
+        <h2 class="panel-title">CẤU HÌNH BÀI TOÁN</h2>
+        <form method="POST" class="input-form">
+          <div class="form-group">
+            <label>Nhập n (0 ≤ n ≤ 8):</label>
+            <input
+              type="number"
+              name="n"
+              value="{{ n if da_chay else '' }}"
+              min="0"
+              max="8"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label>Nhập k (0 ≤ k ≤ n):</label>
+            <input
+              type="number"
+              name="k"
+              value="{{ k if da_chay else '' }}"
+              min="0"
+              required
+            />
+          </div>
+          <button type="submit" class="btn-primary">Chạy Thuật Toán</button>
+        </form>
+
+        {% if error %}
+        <div class="error-msg">Lỗi: {{ error }}</div>
+        {% endif %} {% if da_chay and not error %}
+        <div class="result-box mt-20">
+          <h3>Số lượng A(n,k)</h3>
+          <p class="highlight">{{ so_luong }}</p>
+        </div>
+
+        <div class="result-box mt-20">
+          <h3>Kết quả Đệ quy</h3>
+          <div class="array-list">
+            {% for day in ket_qua_de_quy %}
+            <span class="array-item">[{{ day | join(', ') }}]</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </aside>
+
+      <!-- CỘT GIỮA: MÔ PHỎNG TRỰC QUAN -->
+      <main class="panel visual-panel">
+        <h2 class="panel-title">MÔ PHỎNG QUÁ TRÌNH QUAY LUI</h2>
+
+        {% if da_chay and not error and trace_data %}
+        <div class="visualizer-container">
+          <div class="visualizer-display">
+            <div class="state-box">
+              <h3>Mảng x (Chỉnh hợp đang xây dựng)</h3>
+              <div id="vis-x" class="array-visual"></div>
+            </div>
+            <div class="state-box">
+              <h3>Mảng used (Trạng thái đánh dấu)</h3>
+              <div id="vis-used" class="array-visual"></div>
+            </div>
+            <div class="state-box action-box">
+              <h3>Hành động hiện tại</h3>
+              <p id="vis-action">Nhấn "Bước tiếp theo" để bắt đầu</p>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button id="btn-step" class="btn-control">Bước tiếp theo</button>
+            <button id="btn-reset" class="btn-control btn-danger">
+              Chạy lại từ đầu
+            </button>
+          </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <p>Vui lòng nhập n và k ở cột bên trái để xem mô phỏng.</p>
+        </div>
+        {% endif %}
+      </main>
+
+      <!-- CỘT PHẢI: LOG & LỊCH SỬ -->
+      <aside class="panel log-panel">
+        <h2 class="panel-title">NHẬT KÝ THỰC THI</h2>
+        <div class="log-container" id="log-container">
+          <p class="log-placeholder">Hệ thống chưa chạy...</p>
+        </div>
+
+        {% if lich_su %}
+        <div class="history-section">
+          <h3>Lịch sử gần đây</h3>
+          <table class="history-table">
+            <tr>
+              <th>n</th>
+              <th>k</th>
+              <th>Kết quả</th>
+            </tr>
+            {% for row in lich_su %}
+            <tr>
+              <td>{{ row['n'] }}</td>
+              <td>{{ row['k'] }}</td>
+              <td>{{ row['so_luong'] }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+        {% endif %}
+      </aside>
+    </div>
+
+    <!-- Javascript xử lý Animation Mô phỏng -->
+    <script>
+      const traceData = {{ trace_data | tojson | safe }};
+      let currentStep = -1;
+
+      const btnStep = document.getElementById("btn-step");
+      const btnReset = document.getElementById("btn-reset");
+      const visX = document.getElementById("vis-x");
+      const visUsed = document.getElementById("vis-used");
+      const visAction = document.getElementById("vis-action");
+      const logContainer = document.getElementById("log-container");
+
+      // Hàm vẽ mảng
+      function renderArray(container, arr, isUsed = false) {
+          container.innerHTML = "";
+          arr.forEach((val, index) => {
+              const box = document.createElement("div");
+              box.className = "vis-box";
+              if (isUsed) {
+                  box.innerText = val ? "T" : "F";
+                  if (val) box.classList.add("box-used-true");
+              } else {
+                  box.innerText = val === 0 ? "-" : val;
+                  if (val !== 0) box.classList.add("box-active");
+              }
+              // Hiển thị chỉ số index phía trên hộp
+              const label = document.createElement("span");
+              label.className = "vis-index";
+              label.innerText = index + 1;
+              box.appendChild(label);
+              container.appendChild(box);
+          });
+      }
+
+      // Hàm thêm log
+      function addLog(message, type) {
+          const p = document.createElement("p");
+          p.className = `log-item log-${type}`;
+          p.innerText = `> ${message}`;
+          logContainer.appendChild(p);
+          logContainer.scrollTop = logContainer.scrollHeight; // Auto scroll
+      }
+
+      if (btnStep && traceData.length > 0) {
+          btnStep.addEventListener("click", () => {
+              if (currentStep < traceData.length - 1) {
+                  currentStep++;
+                  const step = traceData[currentStep];
+
+                  visAction.innerText = step.message;
+                  renderArray(visX, step.x, false);
+                  renderArray(visUsed, step.used, true);
+
+                  // Đổi màu log theo hành động
+                  let type = "normal";
+                  if (step.type === "SELECT") type = "success";
+                  if (step.type === "BACKTRACK") type = "warning";
+                  if (step.type === "SAVE") type = "highlight";
+                  addLog(step.message, type);
+              } else {
+                  btnStep.disabled = true;
+                  btnStep.innerText = "Đã kết thúc";
+              }
+          });
+
+          btnReset.addEventListener("click", () => {
+              currentStep = -1;
+              btnStep.disabled = false;
+              btnStep.innerText = "Bước tiếp theo";
+              visAction.innerText = "Nhấn 'Bước tiếp theo' để bắt đầu";
+              visX.innerHTML = "";
+              visUsed.innerHTML = "";
+              logContainer.innerHTML = '<p class="log-placeholder">Đã reset. Nhấn Bước tiếp theo...</p>';
+          });
+      }
+    </script>
+  </body>
+</html>

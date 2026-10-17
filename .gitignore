@@ -1,0 +1,21 @@
+cat <<EOT > .gitignore
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Database
+*.db
+*.sqlite3
+
+# Docker
+node_modules/
+
+# Môi trường & IDE
+.env
+.vscode/
+.DS_Store
+EOT

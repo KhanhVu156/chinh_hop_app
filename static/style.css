@@ -1,0 +1,493 @@
+/* ==============================================================================
+   CẤU HÌNH BẢNG MÀU (CSS VARIABLES)
+   ============================================================================== */
+
+/* Mặc định (Light Mode) */
+:root {
+    --bg-body: #f4f7f6;
+    --bg-panel: #ffffff;
+    --bg-input: #ffffff;
+    --bg-hover: #f1f5f9;
+    --bg-log: #f8fafc;
+    --bg-box: #e2e8f0;
+
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --text-inverse: #ffffff;
+
+    --border-color: #cbd5e1;
+    --border-log: #e2e8f0;
+
+    --primary-color: #3b82f6;
+    --primary-hover: #2563eb;
+
+    --success-color: #10b981;
+    --success-hover: #059669;
+
+    --warning-color: #d97706;
+    --danger-color: #ef4444;
+    --danger-hover: #dc2626;
+
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Tự động chuyển sang Dark Mode nếu hệ thống thiết lập */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-body: #0f172a;
+        --bg-panel: #1e293b;
+        --bg-input: #0f172a;
+        --bg-hover: #334155;
+        --bg-log: #0f172a;
+        --bg-box: #334155;
+
+        --text-main: #e2e8f0;
+        --text-muted: #94a3b8;
+        --text-inverse: #ffffff;
+
+        --border-color: #334155;
+        --border-log: #334155;
+
+        --primary-color: #3b82f6;
+        --primary-hover: #2563eb;
+
+        --success-color: #10b981;
+        --success-hover: #059669;
+
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --danger-hover: #dc2626;
+
+        --shadow-color: rgba(0, 0, 0, 0.5);
+    }
+}
+
+/* ==============================================================================
+   RESET & BASE
+   ============================================================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    /* Hiệu ứng chuyển màu mượt */
+}
+
+/* ==============================================================================
+   HEADER
+   ============================================================================== */
+.app-header {
+    background-color: var(--bg-panel);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-title h1 {
+    font-size: 20px;
+    color: var(--text-main);
+}
+
+.badge {
+    background-color: var(--primary-color);
+    color: var(--text-inverse);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.header-author {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.header-author strong {
+    color: var(--primary-color);
+}
+
+/* ==============================================================================
+   LAYOUT (3 CỘT)
+   ============================================================================== */
+.main-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr 350px;
+    gap: 15px;
+    padding: 15px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.panel {
+    background-color: var(--bg-panel);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 4px 6px var(--shadow-color);
+}
+
+.panel-title {
+    background-color: var(--bg-hover);
+    padding: 12px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-color);
+    letter-spacing: 1px;
+}
+
+/* ==============================================================================
+   CỘT TRÁI: FORM & KẾT QUẢ
+   ============================================================================== */
+.config-panel {
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.input-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-group label {
+    font-size: 14px;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.form-group input {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-input);
+    color: var(--text-main);
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    border-color: var(--primary-color);
+}
+
+.btn-primary {
+    padding: 12px;
+    background-color: var(--primary-color);
+    color: var(--text-inverse);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 10px;
+    transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+}
+
+.error-msg {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.result-box {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: var(--bg-hover);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.result-box h3 {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+.highlight {
+    font-size: 24px;
+    color: var(--success-color);
+    font-weight: bold;
+}
+
+.array-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.array-item {
+    background-color: var(--bg-box);
+    color: var(--text-main);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    border: 1px solid var(--border-color);
+}
+
+/* ==============================================================================
+   CỘT GIỮA: VISUALIZER
+   ============================================================================== */
+.visual-panel {
+    padding: 20px;
+    position: relative;
+}
+
+.visualizer-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+}
+
+.visualizer-display {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.state-box {
+    background-color: var(--bg-body);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.state-box h3 {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 15px;
+}
+
+.action-box p {
+    color: var(--primary-color);
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Mảng mô phỏng */
+.array-visual {
+    display: flex;
+    gap: 10px;
+}
+
+.vis-box {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-panel);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--text-main);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.vis-index {
+    position: absolute;
+    top: -20px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* Trạng thái Active (Đang chọn) */
+.box-active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--text-inverse);
+    box-shadow: 0 0 10px var(--primary-color);
+}
+
+/* Trạng thái Used (Đã đánh dấu) */
+.box-used-true {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+    color: var(--text-inverse);
+}
+
+/* Điều khiển */
+.controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.btn-control {
+    padding: 12px 24px;
+    background-color: var(--bg-hover);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.btn-control:hover {
+    background-color: var(--bg-box);
+}
+
+.btn-control:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+    color: var(--text-inverse);
+    border: none;
+}
+
+.btn-danger:hover {
+    background-color: var(--danger-hover);
+}
+
+/* ==============================================================================
+   CỘT PHẢI: NHẬT KÝ (LOG) & LỊCH SỬ
+   ============================================================================== */
+.log-panel {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.log-container {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background-color: var(--bg-log);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.log-placeholder {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.log-item {
+    margin-bottom: 8px;
+    padding-left: 10px;
+    border-left: 3px solid transparent;
+    color: var(--text-main);
+}
+
+.log-normal {
+    border-left-color: var(--border-color);
+}
+
+.log-success {
+    color: var(--success-color);
+    border-left-color: var(--success-color);
+}
+
+.log-warning {
+    color: var(--warning-color);
+    border-left-color: var(--warning-color);
+}
+
+.log-highlight {
+    color: var(--primary-color);
+    border-left-color: var(--primary-color);
+    font-weight: bold;
+}
+
+/* Bảng lịch sử */
+.history-section {
+    padding: 15px;
+    background-color: var(--bg-panel);
+}
+
+.history-section h3 {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: center;
+}
+
+.history-table th {
+    color: var(--text-muted);
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.history-table td {
+    padding: 8px 5px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
+}
+
+/* ==============================================================================
+   SCROLLBAR
+   ============================================================================== */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-body);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}

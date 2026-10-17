@@ -4,6 +4,7 @@ Dự án môn học Cấu trúc Dữ liệu và Giải thuật (INT13185) - Họ
 Được thiết kế và mở rộng thành một ứng dụng Web trực quan hóa thuật toán (Algorithm Visualizer) và đóng gói chuẩn production.
 
 ## 🚀 Tính năng nổi bật
+
 - **Thuật toán lõi:** Liệt kê chỉnh hợp không lặp chập k bằng phương pháp Đệ quy Quay lui (Backtracking) và Sinh kế tiếp (Next Permutation).
 - **Trực quan hóa (Visualizer):** Mô phỏng từng bước chạy của thuật toán (chọn, quay lui), hiển thị trạng thái mảng `x` và mảng đánh dấu `used` trực quan sinh động.
 - **Lịch sử tính toán:** Lưu trữ các lần chạy gần nhất vào cơ sở dữ liệu.
@@ -11,6 +12,7 @@ Dự án môn học Cấu trúc Dữ liệu và Giải thuật (INT13185) - Họ
 - **Giao diện:** Responsive, tự động chuyển đổi giữa chế độ Sáng/Tối (Light/Dark Mode) theo cài đặt hệ thống.
 
 ## 🛠️ Công nghệ sử dụng
+
 - **Backend:** Python 3.11, Flask, SQLAlchemy
 - **Frontend:** HTML, CSS (CSS Variables), JavaScript thuần
 - **Database:** SQLite (Local) / PostgreSQL (Production)
@@ -18,6 +20,7 @@ Dự án môn học Cấu trúc Dữ liệu và Giải thuật (INT13185) - Họ
 - **Deployment:** Docker, Docker Compose, GitHub Actions (CI/CD), Render
 
 ## 📂 Cấu trúc thư mục
+
 ```text
 chinh_hop_app/
 ├── .github/workflows/  # Cấu hình CI/CD tự động chạy test
@@ -34,6 +37,7 @@ chinh_hop_app/
 ## ⚙️ Hướng dẫn cài đặt & Chạy
 
 ### Cách 1: Chạy trực tiếp (Local)
+
 ```bash
 # 1. Cài đặt các thư viện cần thiết
 pip install -r requirements.txt
@@ -41,23 +45,29 @@ pip install -r requirements.txt
 # 2. Chạy ứng dụng
 python app.py
 ```
+
 Truy cập giao diện tại: `http://localhost:5000`
 
 ### Cách 2: Chạy bằng Docker (Khuyên dùng)
+
 ```bash
 docker compose up --build
 ```
+
 Truy cập giao diện tại: `http://localhost:5000`
 
 ## 🧪 Chạy kiểm thử tự động
+
 ```bash
 pytest tests/
 ```
 
 ## 🌐 Triển khai Online (Live Demo)
+
 Ứng dụng đã được triển khai tự động qua Render:
-👉 **[Link Live Demo Của Ông Điền Vào Đây]**
+👉 **https://chinh-hop-app.onrender.com/**
 
 ## 👨‍💻 Tác giả
+
 - **Vũ Duy Khánh** - MSSV: N24DCDT039 - Lớp: D24CQDT01-N
 - Môn học: Cấu trúc dữ liệu và Giải thuật (INT13185) - Nhóm 03

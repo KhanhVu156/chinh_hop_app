@@ -493,44 +493,66 @@ body {
 }
 
 /* ==============================================================================
-   PHÂN TRANG (PAGINATION) VÀ CẢNH BÁO
+   PHÂN TRANG CHUẨN CÔNG NGHIỆP (PAGINATION)
    ============================================================================== */
 .pagination {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 15px;
-    margin-top: 20px;
-    padding: 10px;
-    background-color: var(--bg-panel);
-    border-top: 2px dashed var(--border-color);
-    border-radius: 0 0 6px 6px;
+    list-style: none;
+    padding: 0;
+    margin: 15px 0;
+    gap: 4px;
+    flex-wrap: wrap;
 }
 
-.btn-page {
-    padding: 8px 15px;
+.page-item {
+    display: inline-block;
+}
+
+.page-link {
+    display: block;
+    padding: 6px 12px;
+    font-size: 14px;
+    color: var(--text-main);
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    line-height: 1.5;
+}
+
+.page-link:hover {
+    background-color: var(--bg-hover);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.page-item.active .page-link {
     background-color: var(--primary-color);
     color: var(--text-inverse);
-    text-decoration: none;
-    border-radius: 4px;
-    border: 1px solid var(--primary-color);
-    font-size: 14px;
+    border-color: var(--primary-color);
     font-weight: bold;
-    transition: 0.2s;
+    pointer-events: none;
 }
 
-.btn-page:hover {
-    background-color: var(--primary-hover);
-    border-color: var(--primary-hover);
-}
-
-.page-info {
-    font-size: 14px;
+.page-item.disabled .page-link {
     color: var(--text-muted);
-    font-weight: bold;
+    background-color: var(--bg-body);
+    border-color: var(--border-color);
+    pointer-events: none;
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
-/* Hộp cảnh báo khi quá nhiều kết quả */
+.mt-10 {
+    margin-top: 10px;
+}
+
+/* ==============================================================================
+   HỘP CẢNH BÁO
+   ============================================================================== */
 .warning-box {
     background-color: var(--bg-hover);
     padding: 30px;

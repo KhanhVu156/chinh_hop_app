@@ -60,27 +60,121 @@
 
         <div class="result-box mt-20">
           <h3>Kết quả Đệ quy</h3>
+
+          <!-- PHÂN TRANG CHUẨN CÔNG NGHIỆP (TRÊN) -->
+          {% if total_pages > 1 %}
+          <ul class="pagination">
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+              <a
+                class="page-link"
+                href="?page=1&n={{ n }}&k={{ k }}"
+                title="Trang đầu"
+                >&laquo;&laquo;</a
+              >
+            </li>
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+              <a
+                class="page-link"
+                href="?page={{ page - 1 }}&n={{ n }}&k={{ k }}"
+                title="Trang trước"
+                >&laquo;</a
+              >
+            </li>
+
+            {% for p in page_range %} {% if p == '...' %}
+            <li class="page-item disabled">
+              <span class="page-link">...</span>
+            </li>
+            {% else %}
+            <li class="page-item {% if p == page %}active{% endif %}">
+              <a class="page-link" href="?page={{ p }}&n={{ n }}&k={{ k }}"
+                >{{ p }}</a
+              >
+            </li>
+            {% endif %} {% endfor %}
+
+            <li
+              class="page-item {% if page == total_pages %}disabled{% endif %}"
+            >
+              <a
+                class="page-link"
+                href="?page={{ page + 1 }}&n={{ n }}&k={{ k }}"
+                title="Trang sau"
+                >&raquo;</a
+              >
+            </li>
+            <li
+              class="page-item {% if page == total_pages %}disabled{% endif %}"
+            >
+              <a
+                class="page-link"
+                href="?page={{ total_pages }}&n={{ n }}&k={{ k }}"
+                title="Trang cuối"
+                >&raquo;&raquo;</a
+              >
+            </li>
+          </ul>
+          {% endif %}
+
           <div class="array-list">
             {% for day in ket_qua_de_quy %}
             <span class="array-item">[{{ day | join(', ') }}]</span>
             {% endfor %}
           </div>
 
-          <!-- PHÂN TRANG -->
+          <!-- PHÂN TRANG CHUẨN CÔNG NGHIỆP (DƯỚI) -->
           {% if total_pages > 1 %}
-          <div class="pagination">
-            {% if page > 1 %}
-            <a href="?page={{ page - 1 }}&n={{ n }}&k={{ k }}" class="btn-page"
-              >&laquo; Trang trước</a
+          <ul class="pagination mt-10">
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+              <a
+                class="page-link"
+                href="?page=1&n={{ n }}&k={{ k }}"
+                title="Trang đầu"
+                >&laquo;&laquo;</a
+              >
+            </li>
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+              <a
+                class="page-link"
+                href="?page={{ page - 1 }}&n={{ n }}&k={{ k }}"
+                title="Trang trước"
+                >&laquo;</a
+              >
+            </li>
+
+            {% for p in page_range %} {% if p == '...' %}
+            <li class="page-item disabled">
+              <span class="page-link">...</span>
+            </li>
+            {% else %}
+            <li class="page-item {% if p == page %}active{% endif %}">
+              <a class="page-link" href="?page={{ p }}&n={{ n }}&k={{ k }}"
+                >{{ p }}</a
+              >
+            </li>
+            {% endif %} {% endfor %}
+
+            <li
+              class="page-item {% if page == total_pages %}disabled{% endif %}"
             >
-            {% endif %}
-            <span class="page-info">Trang {{ page }} / {{ total_pages }}</span>
-            {% if page < total_pages %}
-            <a href="?page={{ page + 1 }}&n={{ n }}&k={{ k }}" class="btn-page"
-              >Trang sau &raquo;</a
+              <a
+                class="page-link"
+                href="?page={{ page + 1 }}&n={{ n }}&k={{ k }}"
+                title="Trang sau"
+                >&raquo;</a
+              >
+            </li>
+            <li
+              class="page-item {% if page == total_pages %}disabled{% endif %}"
             >
-            {% endif %}
-          </div>
+              <a
+                class="page-link"
+                href="?page={{ total_pages }}&n={{ n }}&k={{ k }}"
+                title="Trang cuối"
+                >&raquo;&raquo;</a
+              >
+            </li>
+          </ul>
           {% endif %}
         </div>
         {% endif %}
@@ -113,18 +207,41 @@
               Chạy lại từ đầu
             </button>
           </div>
+
+          <!-- THÔNG BÁO KHI TRACE BỊ CẮT -->
+          {% if trace_truncated %}
+          <div
+            class="warning-box"
+            style="
+              margin-top: 15px;
+              padding: 15px;
+              background: #fffbeb;
+              border: 1px dashed #f59e0b;
+              border-radius: 8px;
+            "
+          >
+            <p
+              style="
+                color: #d97706;
+                font-weight: bold;
+                font-size: 14px;
+                margin-bottom: 5px;
+              "
+            >
+              * Lưu ý về hiệu năng mô phỏng:
+            </p>
+            <p style="color: var(--text-main); font-size: 13px">
+              Chương trình đã tính toán chính xác toàn bộ
+              <strong>{{ so_luong }}</strong> kết quả. Tuy nhiên, Visualizer chỉ
+              hiển thị <strong>5.000 bước</strong> đầu tiên để tránh treo trình
+              duyệt.
+            </p>
+          </div>
+          {% endif %}
         </div>
         {% elif da_chay and not error and not trace_data %}
-        <!-- THÔNG BÁO KHI DỮ LIỆU QUÁ LỚN (Đã sửa lại dùng class CSS) -->
-        <div class="warning-box">
-          <p class="warning-title">
-            Hệ thống ghi nhận số lượng kết quả quá lớn.
-          </p>
-          <p class="warning-desc">
-            Để đảm bảo hiệu năng trình duyệt, tính năng Mô phỏng từng bước
-            (Visualizer) đã được tạm ẩn. Bạn vẫn có thể xem toàn bộ kết quả bằng
-            cách sử dụng tính năng phân trang ở cột bên trái.
-          </p>
+        <div class="empty-state">
+          <p>Không có bước mô phỏng nào để hiển thị (trường hợp k = 0).</p>
         </div>
         {% else %}
         <div class="empty-state">
@@ -174,20 +291,18 @@
       const visAction = document.getElementById("vis-action");
       const logContainer = document.getElementById("log-container");
 
-      // Hàm vẽ mảng
       function renderArray(container, arr, isUsed = false) {
           container.innerHTML = "";
           arr.forEach((val, index) => {
               const box = document.createElement("div");
               box.className = "vis-box";
               if (isUsed) {
-                box.innerText = val ? "T" : "F";
-                if (val) box.classList.add("box-used-true");
+                  box.innerText = val ? "T" : "F";
+                  if (val) box.classList.add("box-used-true");
               } else {
-                box.innerText = val === 0 ? "-" : val;
-                if (val !== 0) box.classList.add("box-active");
+                  box.innerText = val === 0 ? "-" : val;
+                  if (val !== 0) box.classList.add("box-active");
               }
-              // Hiển thị chỉ số index phía trên hộp
               const label = document.createElement("span");
               label.className = "vis-index";
               label.innerText = index + 1;
@@ -196,34 +311,30 @@
           });
       }
 
-      // Hàm thêm log
       function addLog(message, type) {
           const p = document.createElement("p");
           p.className = `log-item log-${type}`;
           p.innerText = `> ${message}`;
           logContainer.appendChild(p);
-          logContainer.scrollTop = logContainer.scrollHeight; // Auto scroll
+          logContainer.scrollTop = logContainer.scrollHeight;
       }
 
       if (btnStep && traceData.length > 0) {
           btnStep.addEventListener("click", () => {
               if (currentStep < traceData.length - 1) {
-                currentStep++;
-                const step = traceData[currentStep];
-
-                visAction.innerText = step.message;
-                renderArray(visX, step.x, false);
-                renderArray(visUsed, step.used, true);
-
-                // Đổi màu log theo hành động
-                let type = "normal";
-                if (step.type === "SELECT") type = "success";
-                if (step.type === "BACKTRACK") type = "warning";
-                if (step.type === "SAVE") type = "highlight";
-                addLog(step.message, type);
+                  currentStep++;
+                  const step = traceData[currentStep];
+                  visAction.innerText = step.message;
+                  renderArray(visX, step.x, false);
+                  renderArray(visUsed, step.used, true);
+                  let type = "normal";
+                  if (step.type === "SELECT") type = "success";
+                  if (step.type === "BACKTRACK") type = "warning";
+                  if (step.type === "SAVE") type = "highlight";
+                  addLog(step.message, type);
               } else {
-                btnStep.disabled = true;
-                btnStep.innerText = "Đã kết thúc";
+                  btnStep.disabled = true;
+                  btnStep.innerText = "Đã kết thúc";
               }
           });
 

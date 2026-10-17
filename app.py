@@ -31,7 +31,6 @@ def init_db():
                        thoi_gian TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
         db.commit()
 
-# Khởi tạo DB khi chạy lần đầu
 if not os.path.exists(DATABASE):
     init_db()
 
@@ -41,6 +40,31 @@ def luu_lich_su(n, k, so_luong):
     db.commit()
 
 # ==============================================================================
+# HÀM TÍNH DẢI PHÂN TRANG THÔNG MINH (SMART PAGINATION)
+# ==============================================================================
+def get_pagination_range(current_page, total_pages, window=2):
+    """
+    Trả về dải phân trang dạng: [1, '...', 4, 5, 6, 7, '...', 807]
+    """
+    if total_pages <= (window * 2) + 5:
+        return range(1, total_pages + 1)
+        
+    pages = set()
+    pages.add(1)
+    pages.add(total_pages)
+    
+    for i in range(max(1, current_page - window), min(total_pages, current_page + window) + 1):
+        pages.add(i)
+        
+    sorted_pages = sorted(list(pages))
+    result = []
+    for i, p in enumerate(sorted_pages):
+        if i > 0 and p - sorted_pages[i-1] > 1:
+            result.append("...")
+        result.append(p)
+    return result
+
+# ==============================================================================
 # LUỒNG XỬ LÝ CHÍNH (Giao diện)
 # ==============================================================================
 @app.route('/', methods=['GET', 'POST'])
@@ -48,15 +72,14 @@ def index():
     ket_qua_de_quy = []
     ket_qua_sinh = []
     trace_data = []
+    trace_truncated = False
     n, k, so_luong = 0, 0, 0
     error = None
     da_chay = False
     
-    # Cấu hình Phân trang
     page = request.args.get('page', 1, type=int)
     per_page = 50
 
-    # Lấy n và k từ POST (nếu chạy form) hoặc từ URL (nếu chuyển trang)
     n_str = request.form.get('n') if request.method == 'POST' else request.args.get('n')
     k_str = request.form.get('k') if request.method == 'POST' else request.args.get('k')
 
@@ -67,9 +90,8 @@ def index():
             da_chay = True
             
             if request.method == 'POST':
-                page = 1 # Reset về trang 1 khi chạy bài mới
+                page = 1
                 
-            # Kiểm tra điều kiện biên theo đề bài
             if n < 0 or n > 8:
                 error = "Vui lòng nhập n trong khoảng 0 đến 8."
             elif k < 0 or k > n:
@@ -78,7 +100,6 @@ def index():
                 so_luong = so_chinh_hop(n, k)
                 full_de_quy = liet_ke_chinh_hop(n, k)
                 
-                # Phân trang: Chỉ lấy 50 kết quả cho trang hiện tại
                 total_pages = (len(full_de_quy) + per_page - 1) // per_page
                 start_idx = (page - 1) * per_page
                 end_idx = start_idx + per_page
@@ -87,8 +108,11 @@ def index():
                 if k > 0:
                     full_sinh = sinh_ke_tiep_chinh_hop(n, k)
                     ket_qua_sinh = full_sinh[start_idx:end_idx]
-                    # Lấy dữ liệu trace (đã được giới hạn bên logic.py)
-                    _, trace_data = liet_ke_chinh_hop_co_trace(n, k)
+                    
+                    # Lấy trace (giới hạn 5000 bước để không treo Visualizer)
+                    _, trace_data = liet_ke_chinh_hop_co_trace(n, k, max_steps=5000)
+                    if len(trace_data) >= 5000:
+                        trace_truncated = True
                 
                 if request.method == 'POST':
                     luu_lich_su(n, k, so_luong)
@@ -96,11 +120,11 @@ def index():
         except ValueError:
             error = "Dữ liệu nhập vào không hợp lệ."
             
-    # Khởi tạo biến total_pages nếu chưa có để tránh lỗi HTML
     if 'total_pages' not in locals():
         total_pages = 1
 
-    # Lấy 5 lần tính toán gần nhất
+    page_range = get_pagination_range(page, total_pages)
+
     db = get_db()
     lich_su = db.execute('SELECT * FROM history ORDER BY id DESC LIMIT 5').fetchall()
 
@@ -109,12 +133,14 @@ def index():
                            ket_qua_de_quy=ket_qua_de_quy,
                            ket_qua_sinh=ket_qua_sinh,
                            trace_data=trace_data,
+                           trace_truncated=trace_truncated,
                            lich_su=lich_su,
                            error=error, da_chay=da_chay,
-                           page=page, total_pages=total_pages)
+                           page=page, total_pages=total_pages,
+                           page_range=page_range)
 
 # ==============================================================================
-# RESTFUL API (Dành cho Mobile App hoặc bên thứ 3 gọi)
+# RESTFUL API 
 # ==============================================================================
 @app.route('/api/permutations', methods=['GET'])
 def api_permutations():

@@ -1,8 +1,7 @@
-cat <<EOT > .gitignore
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
+*.class
 venv/
 .venv/
 env/
@@ -18,4 +17,3 @@ node_modules/
 .env
 .vscode/
 .DS_Store
-EOT

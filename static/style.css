@@ -551,26 +551,26 @@ body {
 }
 
 /* ==============================================================================
-   HỘP CẢNH BÁO
+   HỘP CẢNH BÁO (WARNING BOX) - Đã tối ưu cho cả Light và Dark Mode
    ============================================================================== */
 .warning-box {
-    background-color: var(--bg-hover);
-    padding: 30px;
-    border-radius: 8px;
+    margin-top: 15px;
+    padding: 15px;
+    /* Sử dụng màu vàng cam trong suốt (alpha 0.1) để tương thích với cả nền sáng và tối */
+    background-color: rgba(245, 158, 11, 0.1);
     border: 1px dashed var(--warning-color);
-    margin: auto;
-    text-align: center;
+    border-radius: 8px;
 }
 
 .warning-title {
     color: var(--warning-color);
     font-weight: bold;
-    font-size: 18px;
-    margin-bottom: 15px;
+    font-size: 14px;
+    margin-bottom: 5px;
 }
 
 .warning-desc {
     color: var(--text-main);
-    font-size: 15px;
-    line-height: 1.6;
+    font-size: 13px;
+    line-height: 1.5;
 }

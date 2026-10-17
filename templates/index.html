@@ -61,7 +61,7 @@
         <div class="result-box mt-20">
           <h3>Kết quả Đệ quy</h3>
 
-          <!-- PHÂN TRANG CHUẨN CÔNG NGHIỆP (TRÊN) -->
+          <!-- PHÂN TRANG CHUẨN CÔNG NGHIỆP (CHỈ GIỮ LẠI Ở TRÊN) -->
           {% if total_pages > 1 %}
           <ul class="pagination">
             <li class="page-item {% if page == 1 %}disabled{% endif %}">
@@ -121,61 +121,6 @@
             <span class="array-item">[{{ day | join(', ') }}]</span>
             {% endfor %}
           </div>
-
-          <!-- PHÂN TRANG CHUẨN CÔNG NGHIỆP (DƯỚI) -->
-          {% if total_pages > 1 %}
-          <ul class="pagination mt-10">
-            <li class="page-item {% if page == 1 %}disabled{% endif %}">
-              <a
-                class="page-link"
-                href="?page=1&n={{ n }}&k={{ k }}"
-                title="Trang đầu"
-                >&laquo;&laquo;</a
-              >
-            </li>
-            <li class="page-item {% if page == 1 %}disabled{% endif %}">
-              <a
-                class="page-link"
-                href="?page={{ page - 1 }}&n={{ n }}&k={{ k }}"
-                title="Trang trước"
-                >&laquo;</a
-              >
-            </li>
-
-            {% for p in page_range %} {% if p == '...' %}
-            <li class="page-item disabled">
-              <span class="page-link">...</span>
-            </li>
-            {% else %}
-            <li class="page-item {% if p == page %}active{% endif %}">
-              <a class="page-link" href="?page={{ p }}&n={{ n }}&k={{ k }}"
-                >{{ p }}</a
-              >
-            </li>
-            {% endif %} {% endfor %}
-
-            <li
-              class="page-item {% if page == total_pages %}disabled{% endif %}"
-            >
-              <a
-                class="page-link"
-                href="?page={{ page + 1 }}&n={{ n }}&k={{ k }}"
-                title="Trang sau"
-                >&raquo;</a
-              >
-            </li>
-            <li
-              class="page-item {% if page == total_pages %}disabled{% endif %}"
-            >
-              <a
-                class="page-link"
-                href="?page={{ total_pages }}&n={{ n }}&k={{ k }}"
-                title="Trang cuối"
-                >&raquo;&raquo;</a
-              >
-            </li>
-          </ul>
-          {% endif %}
         </div>
         {% endif %}
       </aside>
@@ -208,29 +153,11 @@
             </button>
           </div>
 
-          <!-- THÔNG BÁO KHI TRACE BỊ CẮT -->
+          <!-- THÔNG BÁO KHI TRACE BỊ CẮT (Đã bỏ inline style) -->
           {% if trace_truncated %}
-          <div
-            class="warning-box"
-            style="
-              margin-top: 15px;
-              padding: 15px;
-              background: #fffbeb;
-              border: 1px dashed #f59e0b;
-              border-radius: 8px;
-            "
-          >
-            <p
-              style="
-                color: #d97706;
-                font-weight: bold;
-                font-size: 14px;
-                margin-bottom: 5px;
-              "
-            >
-              * Lưu ý về hiệu năng mô phỏng:
-            </p>
-            <p style="color: var(--text-main); font-size: 13px">
+          <div class="warning-box">
+            <p class="warning-title">* Lưu ý về hiệu năng mô phỏng:</p>
+            <p class="warning-desc">
               Chương trình đã tính toán chính xác toàn bộ
               <strong>{{ so_luong }}</strong> kết quả. Tuy nhiên, Visualizer chỉ
               hiển thị <strong>5.000 bước</strong> đầu tiên để tránh treo trình

@@ -15,4 +15,4 @@ COPY . .
 EXPOSE 5000
 
 # Lệnh chạy ứng dụng
-CMD ["python", "app.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]

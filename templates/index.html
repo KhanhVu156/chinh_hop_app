@@ -115,21 +115,12 @@
           </div>
         </div>
         {% elif da_chay and not error and not trace_data %}
-        <!-- THÔNG BÁO KHI DỮ LIỆU QUÁ LỚN -->
-        <div
-          class="empty-state"
-          style="
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 20px;
-          "
-        >
-          <p style="color: #d97706; font-weight: bold; font-size: 16px">
+        <!-- THÔNG BÁO KHI DỮ LIỆU QUÁ LỚN (Đã sửa lại dùng class CSS) -->
+        <div class="warning-box">
+          <p class="warning-title">
             Hệ thống ghi nhận số lượng kết quả quá lớn.
           </p>
-          <p style="margin-top: 10px">
+          <p class="warning-desc">
             Để đảm bảo hiệu năng trình duyệt, tính năng Mô phỏng từng bước
             (Visualizer) đã được tạm ẩn. Bạn vẫn có thể xem toàn bộ kết quả bằng
             cách sử dụng tính năng phân trang ở cột bên trái.
@@ -190,11 +181,11 @@
               const box = document.createElement("div");
               box.className = "vis-box";
               if (isUsed) {
-                  box.innerText = val ? "T" : "F";
-                  if (val) box.classList.add("box-used-true");
+                box.innerText = val ? "T" : "F";
+                if (val) box.classList.add("box-used-true");
               } else {
-                  box.innerText = val === 0 ? "-" : val;
-                  if (val !== 0) box.classList.add("box-active");
+                box.innerText = val === 0 ? "-" : val;
+                if (val !== 0) box.classList.add("box-active");
               }
               // Hiển thị chỉ số index phía trên hộp
               const label = document.createElement("span");
@@ -217,22 +208,22 @@
       if (btnStep && traceData.length > 0) {
           btnStep.addEventListener("click", () => {
               if (currentStep < traceData.length - 1) {
-                  currentStep++;
-                  const step = traceData[currentStep];
+                currentStep++;
+                const step = traceData[currentStep];
 
-                  visAction.innerText = step.message;
-                  renderArray(visX, step.x, false);
-                  renderArray(visUsed, step.used, true);
+                visAction.innerText = step.message;
+                renderArray(visX, step.x, false);
+                renderArray(visUsed, step.used, true);
 
-                  // Đổi màu log theo hành động
-                  let type = "normal";
-                  if (step.type === "SELECT") type = "success";
-                  if (step.type === "BACKTRACK") type = "warning";
-                  if (step.type === "SAVE") type = "highlight";
-                  addLog(step.message, type);
+                // Đổi màu log theo hành động
+                let type = "normal";
+                if (step.type === "SELECT") type = "success";
+                if (step.type === "BACKTRACK") type = "warning";
+                if (step.type === "SAVE") type = "highlight";
+                addLog(step.message, type);
               } else {
-                  btnStep.disabled = true;
-                  btnStep.innerText = "Đã kết thúc";
+                btnStep.disabled = true;
+                btnStep.innerText = "Đã kết thúc";
               }
           });
 

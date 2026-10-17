@@ -65,6 +65,23 @@
             <span class="array-item">[{{ day | join(', ') }}]</span>
             {% endfor %}
           </div>
+
+          <!-- PHÂN TRANG -->
+          {% if total_pages > 1 %}
+          <div class="pagination">
+            {% if page > 1 %}
+            <a href="?page={{ page - 1 }}&n={{ n }}&k={{ k }}" class="btn-page"
+              >&laquo; Trang trước</a
+            >
+            {% endif %}
+            <span class="page-info">Trang {{ page }} / {{ total_pages }}</span>
+            {% if page < total_pages %}
+            <a href="?page={{ page + 1 }}&n={{ n }}&k={{ k }}" class="btn-page"
+              >Trang sau &raquo;</a
+            >
+            {% endif %}
+          </div>
+          {% endif %}
         </div>
         {% endif %}
       </aside>
@@ -96,6 +113,27 @@
               Chạy lại từ đầu
             </button>
           </div>
+        </div>
+        {% elif da_chay and not error and not trace_data %}
+        <!-- THÔNG BÁO KHI DỮ LIỆU QUÁ LỚN -->
+        <div
+          class="empty-state"
+          style="
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+          "
+        >
+          <p style="color: #d97706; font-weight: bold; font-size: 16px">
+            Hệ thống ghi nhận số lượng kết quả quá lớn.
+          </p>
+          <p style="margin-top: 10px">
+            Để đảm bảo hiệu năng trình duyệt, tính năng Mô phỏng từng bước
+            (Visualizer) đã được tạm ẩn. Bạn vẫn có thể xem toàn bộ kết quả bằng
+            cách sử dụng tính năng phân trang ở cột bên trái.
+          </p>
         </div>
         {% else %}
         <div class="empty-state">

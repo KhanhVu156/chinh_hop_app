@@ -102,6 +102,11 @@ def liet_ke_chinh_hop_co_trace(n, k):
     """
     if k < 0 or k > n: return [], []
     
+    # TỐI ƯU: Nếu số lượng kết quả quá lớn (> 1000), việc tạo trace sẽ sinh ra
+    # hàng trăm nghìn bước, gây treo trình duyệt. Ta trả về rỗng để ẩn Visualizer.
+    if so_chinh_hop(n, k) > 1000:
+        return [], []
+
     x = [0] * (k + 1)
     used = [False] * (n + 1)
     ket_qua = []

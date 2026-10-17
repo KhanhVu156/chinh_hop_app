@@ -51,13 +51,24 @@ def index():
     n, k, so_luong = 0, 0, 0
     error = None
     da_chay = False
+    
+    # Cấu hình Phân trang
+    page = request.args.get('page', 1, type=int)
+    per_page = 50
 
-    if request.method == 'POST':
+    # Lấy n và k từ POST (nếu chạy form) hoặc từ URL (nếu chuyển trang)
+    n_str = request.form.get('n') if request.method == 'POST' else request.args.get('n')
+    k_str = request.form.get('k') if request.method == 'POST' else request.args.get('k')
+
+    if n_str is not None and k_str is not None:
         try:
-            n = int(request.form.get('n', 0))
-            k = int(request.form.get('k', 0))
+            n = int(n_str)
+            k = int(k_str)
             da_chay = True
             
+            if request.method == 'POST':
+                page = 1 # Reset về trang 1 khi chạy bài mới
+                
             # Kiểm tra điều kiện biên theo đề bài
             if n < 0 or n > 8:
                 error = "Vui lòng nhập n trong khoảng 0 đến 8."
@@ -65,18 +76,29 @@ def index():
                 error = "Vui lòng nhập k thỏa mãn 0 <= k <= n."
             else:
                 so_luong = so_chinh_hop(n, k)
-                ket_qua_de_quy = liet_ke_chinh_hop(n, k)
+                full_de_quy = liet_ke_chinh_hop(n, k)
+                
+                # Phân trang: Chỉ lấy 50 kết quả cho trang hiện tại
+                total_pages = (len(full_de_quy) + per_page - 1) // per_page
+                start_idx = (page - 1) * per_page
+                end_idx = start_idx + per_page
+                ket_qua_de_quy = full_de_quy[start_idx:end_idx]
                 
                 if k > 0:
-                    ket_qua_sinh = sinh_ke_tiep_chinh_hop(n, k)
-                    # Lấy dữ liệu trace để vẽ visualizer
+                    full_sinh = sinh_ke_tiep_chinh_hop(n, k)
+                    ket_qua_sinh = full_sinh[start_idx:end_idx]
+                    # Lấy dữ liệu trace (đã được giới hạn bên logic.py)
                     _, trace_data = liet_ke_chinh_hop_co_trace(n, k)
                 
-                # Lưu lịch sử vào Database
-                luu_lich_su(n, k, so_luong)
-                
+                if request.method == 'POST':
+                    luu_lich_su(n, k, so_luong)
+                    
         except ValueError:
             error = "Dữ liệu nhập vào không hợp lệ."
+            
+    # Khởi tạo biến total_pages nếu chưa có để tránh lỗi HTML
+    if 'total_pages' not in locals():
+        total_pages = 1
 
     # Lấy 5 lần tính toán gần nhất
     db = get_db()
@@ -88,7 +110,8 @@ def index():
                            ket_qua_sinh=ket_qua_sinh,
                            trace_data=trace_data,
                            lich_su=lich_su,
-                           error=error, da_chay=da_chay)
+                           error=error, da_chay=da_chay,
+                           page=page, total_pages=total_pages)
 
 # ==============================================================================
 # RESTFUL API (Dành cho Mobile App hoặc bên thứ 3 gọi)

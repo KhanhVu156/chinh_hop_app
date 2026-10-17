@@ -95,40 +95,39 @@ def sinh_ke_tiep_chinh_hop(n, k):
     return ket_qua
 
 # --- HÀM TẠO TRACE CHO VISUALIZER (MÔ PHỎNG) ---
-def liet_ke_chinh_hop_co_trace(n, k):
+def liet_ke_chinh_hop_co_trace(n, k, max_steps=5000):
     """
     Tương tự hàm đệ quy gốc nhưng ghi lại trạng thái từng bước.
     Trả về danh sách các bước để Frontend vẽ animation.
+    TỐI ƯU: Thêm tham số max_steps để giới hạn số bước ghi lại,
+    tránh tạo ra hàng trăm nghìn bước gây treo trình duyệt.
     """
     if k < 0 or k > n: return [], []
     
-    # TỐI ƯU: Nếu số lượng kết quả quá lớn (> 1000), việc tạo trace sẽ sinh ra
-    # hàng trăm nghìn bước, gây treo trình duyệt. Ta trả về rỗng để ẩn Visualizer.
-    if so_chinh_hop(n, k) > 1000:
-        return [], []
-
     x = [0] * (k + 1)
     used = [False] * (n + 1)
     ket_qua = []
     trace = []
 
     def thu_co_trace(i):
-        # Ghi nhận trạng thái bắt đầu gọi hàm
-        trace.append({
-            "type": "CALL", 
-            "x": list(x[1:]), 
-            "used": list(used[1:]), 
-            "message": f"Gọi đệ quy tại vị trí i = {i}"
-        })
+        # TỐI ƯU: Chỉ ghi trace nếu chưa vượt quá max_steps
+        if len(trace) < max_steps:
+            trace.append({
+                "type": "CALL", 
+                "x": list(x[1:]), 
+                "used": list(used[1:]), 
+                "message": f"Gọi đệ quy tại vị trí i = {i}"
+            })
 
         if i > k:
             ket_qua.append(list(x[1:]))
-            trace.append({
-                "type": "SAVE", 
-                "x": list(x[1:]), 
-                "used": list(used[1:]), 
-                "message": f"Đã điền đủ {k} vị trí. Lưu kết quả: {x[1:]}"
-            })
+            if len(trace) < max_steps:
+                trace.append({
+                    "type": "SAVE", 
+                    "x": list(x[1:]), 
+                    "used": list(used[1:]), 
+                    "message": f"Đã điền đủ {k} vị trí. Lưu kết quả: {x[1:]}"
+                })
             return
 
         for j in range(1, n + 1):
@@ -136,23 +135,25 @@ def liet_ke_chinh_hop_co_trace(n, k):
                 # Bước chọn
                 x[i] = j
                 used[j] = True
-                trace.append({
-                    "type": "SELECT", 
-                    "x": list(x[1:]), 
-                    "used": list(used[1:]), 
-                    "message": f"Thử chọn {j} cho vị trí {i}"
-                })
+                if len(trace) < max_steps:
+                    trace.append({
+                        "type": "SELECT", 
+                        "x": list(x[1:]), 
+                        "used": list(used[1:]), 
+                        "message": f"Thử chọn {j} cho vị trí {i}"
+                    })
                 
                 thu_co_trace(i + 1)
                 
                 # Bước quay lui
                 used[j] = False
-                trace.append({
-                    "type": "BACKTRACK", 
-                    "x": list(x[1:]), 
-                    "used": list(used[1:]), 
-                    "message": f"Quay lui: Bỏ đánh dấu {j} tại vị trí {i}"
-                })
+                if len(trace) < max_steps:
+                    trace.append({
+                        "type": "BACKTRACK", 
+                        "x": list(x[1:]), 
+                        "used": list(used[1:]), 
+                        "message": f"Quay lui: Bỏ đánh dấu {j} tại vị trí {i}"
+                    })
 
     thu_co_trace(1)
     return ket_qua, trace

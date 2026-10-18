@@ -58,9 +58,20 @@ Truy cập giao diện tại: `http://localhost:5000`
 
 ## 🧪 Chạy kiểm thử tự động
 
+⚠️ Lưu ý quan trọng: Trước khi chạy lệnh kiểm thử, bạn cần kích hoạt môi trường ảo (Virtual Environment / Conda) đã cài đặt các thư viện trong requirements.txt. Nếu máy tính chưa có sẵn, khuyến nghị cài đặt Miniconda trước để tạo và quản lý môi trường ảo dễ dàng.
+Ví dụ với Conda:
+
+````bash
+#Tạo môi trường (nếu chưa có)
+conda create -n webapp python=3.11 -y
+
+#Thay webapp bằng tên môi trường thực tế của bạn
+conda activate webapp
+
+
 ```bash
 pytest tests/
-```
+````
 
 ## 🌐 Triển khai Online (Live Demo)
 

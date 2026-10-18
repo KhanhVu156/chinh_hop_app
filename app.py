@@ -1,10 +1,19 @@
 from flask import Flask, render_template, request, jsonify, g
-import sqlite3
+import psycopg2
+from psycopg2.extras import DictCursor
 from logic import so_chinh_hop, liet_ke_chinh_hop, sinh_ke_tiep_chinh_hop, liet_ke_chinh_hop_co_trace
 import os
 
 app = Flask(__name__)
-DATABASE = 'history.db'
+
+# ==============================================================================
+# CẤU HÌNH KẾT NỐI POSTGRESQL (Lấy từ biến môi trường để bảo mật)
+# ==============================================================================
+DB_HOST = os.environ.get('DB_HOST', 'localhost')
+DB_NAME = os.environ.get('DB_NAME', 'postgres')
+DB_USER = os.environ.get('DB_USER', 'postgres')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', 'postgres')
+DB_PORT = os.environ.get('DB_PORT', '5432')
 
 # ==============================================================================
 # QUẢN LÝ DATABASE (Lưu lịch sử)
@@ -12,8 +21,13 @@ DATABASE = 'history.db'
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-        db.row_factory = sqlite3.Row
+        db = g._database = psycopg2.connect(
+            host=DB_HOST,
+            database=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            port=DB_PORT
+        )
     return db
 
 @app.teardown_appcontext
@@ -23,21 +37,31 @@ def close_connection(exception):
         db.close()
 
 def init_db():
-    with app.app_context():
-        db = get_db()
-        db.execute('''CREATE TABLE IF NOT EXISTS history 
-                      (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                       n INTEGER, k INTEGER, so_luong INTEGER, 
-                       thoi_gian TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-        db.commit()
+    try:
+        with app.app_context():
+            db = get_db()
+            cursor = db.cursor()
+            # Chuyển AUTOINCREMENT thành SERIAL cho PostgreSQL
+            cursor.execute('''CREATE TABLE IF NOT EXISTS history 
+                          (id SERIAL PRIMARY KEY, 
+                           n INTEGER, k INTEGER, so_luong INTEGER, 
+                           thoi_gian TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+            db.commit()
+            cursor.close()
+    except Exception as e:
+        print(f"Không thể khởi tạo Database: {e}")
+        print("Vui lòng kiểm tra lại thông tin kết nối PostgreSQL.")
 
-if not os.path.exists(DATABASE):
-    init_db()
+# Gọi khởi tạo DB
+init_db()
 
 def luu_lich_su(n, k, so_luong):
     db = get_db()
-    db.execute('INSERT INTO history (n, k, so_luong) VALUES (?, ?, ?)', (n, k, so_luong))
+    cursor = db.cursor()
+    # Sử dụng %s thay cho ? của SQLite
+    cursor.execute('INSERT INTO history (n, k, so_luong) VALUES (%s, %s, %s)', (n, k, so_luong))
     db.commit()
+    cursor.close()
 
 # ==============================================================================
 # HÀM TÍNH DẢI PHÂN TRANG THÔNG MINH (SMART PAGINATION)
@@ -125,8 +149,12 @@ def index():
 
     page_range = get_pagination_range(page, total_pages)
 
+    # Sử dụng DictCursor để lấy dữ liệu dạng Dictionary (tương tự row_factory của sqlite3)
     db = get_db()
-    lich_su = db.execute('SELECT * FROM history ORDER BY id DESC LIMIT 5').fetchall()
+    cursor = db.cursor(cursor_factory=DictCursor)
+    cursor.execute('SELECT * FROM history ORDER BY id DESC LIMIT 5')
+    lich_su = cursor.fetchall()
+    cursor.close()
 
     return render_template('index.html', 
                            n=n, k=k, so_luong=so_luong, 

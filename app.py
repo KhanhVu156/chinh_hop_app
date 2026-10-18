@@ -1,19 +1,10 @@
 from flask import Flask, render_template, request, jsonify, g
-import psycopg2
-from psycopg2.extras import DictCursor
+import sqlite3
 from logic import so_chinh_hop, liet_ke_chinh_hop, sinh_ke_tiep_chinh_hop, liet_ke_chinh_hop_co_trace
 import os
 
 app = Flask(__name__)
-
-# ==============================================================================
-# CẤU HÌNH KẾT NỐI POSTGRESQL (Lấy từ biến môi trường để bảo mật)
-# ==============================================================================
-DB_HOST = os.environ.get('DB_HOST', 'localhost')
-DB_NAME = os.environ.get('DB_NAME', 'postgres')
-DB_USER = os.environ.get('DB_USER', 'postgres')
-DB_PASSWORD = os.environ.get('DB_PASSWORD', 'postgres')
-DB_PORT = os.environ.get('DB_PORT', '5432')
+DATABASE = 'history.db'
 
 # ==============================================================================
 # QUẢN LÝ DATABASE (Lưu lịch sử)
@@ -21,13 +12,8 @@ DB_PORT = os.environ.get('DB_PORT', '5432')
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = psycopg2.connect(
-            host=DB_HOST,
-            database=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            port=DB_PORT
-        )
+        db = g._database = sqlite3.connect(DATABASE)
+        db.row_factory = sqlite3.Row
     return db
 
 @app.teardown_appcontext
@@ -37,39 +23,26 @@ def close_connection(exception):
         db.close()
 
 def init_db():
-    try:
-        with app.app_context():
-            db = get_db()
-            cursor = db.cursor()
-            # Chuyển AUTOINCREMENT thành SERIAL cho PostgreSQL
-            cursor.execute('''CREATE TABLE IF NOT EXISTS history 
-                          (id SERIAL PRIMARY KEY, 
-                           n INTEGER, k INTEGER, so_luong INTEGER, 
-                           thoi_gian TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-            db.commit()
-            cursor.close()
-    except Exception as e:
-        print(f"Không thể khởi tạo Database: {e}")
-        print("Vui lòng kiểm tra lại thông tin kết nối PostgreSQL.")
+    with app.app_context():
+        db = get_db()
+        db.execute('''CREATE TABLE IF NOT EXISTS history 
+                      (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                       n INTEGER, k INTEGER, so_luong INTEGER, 
+                       thoi_gian TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+        db.commit()
 
-# Gọi khởi tạo DB
-init_db()
+if not os.path.exists(DATABASE):
+    init_db()
 
 def luu_lich_su(n, k, so_luong):
     db = get_db()
-    cursor = db.cursor()
-    # Sử dụng %s thay cho ? của SQLite
-    cursor.execute('INSERT INTO history (n, k, so_luong) VALUES (%s, %s, %s)', (n, k, so_luong))
+    db.execute('INSERT INTO history (n, k, so_luong) VALUES (?, ?, ?)', (n, k, so_luong))
     db.commit()
-    cursor.close()
 
 # ==============================================================================
 # HÀM TÍNH DẢI PHÂN TRANG THÔNG MINH (SMART PAGINATION)
 # ==============================================================================
 def get_pagination_range(current_page, total_pages, window=2):
-    """
-    Trả về dải phân trang dạng: [1, '...', 4, 5, 6, 7, '...', 807]
-    """
     if total_pages <= (window * 2) + 5:
         return range(1, total_pages + 1)
         
@@ -133,7 +106,6 @@ def index():
                     full_sinh = sinh_ke_tiep_chinh_hop(n, k)
                     ket_qua_sinh = full_sinh[start_idx:end_idx]
                     
-                    # Lấy trace (giới hạn 5000 bước để không treo Visualizer)
                     _, trace_data = liet_ke_chinh_hop_co_trace(n, k, max_steps=5000)
                     if len(trace_data) >= 5000:
                         trace_truncated = True
@@ -149,12 +121,8 @@ def index():
 
     page_range = get_pagination_range(page, total_pages)
 
-    # Sử dụng DictCursor để lấy dữ liệu dạng Dictionary (tương tự row_factory của sqlite3)
     db = get_db()
-    cursor = db.cursor(cursor_factory=DictCursor)
-    cursor.execute('SELECT * FROM history ORDER BY id DESC LIMIT 5')
-    lich_su = cursor.fetchall()
-    cursor.close()
+    lich_su = db.execute('SELECT * FROM history ORDER BY id DESC LIMIT 5').fetchall()
 
     return render_template('index.html', 
                            n=n, k=k, so_luong=so_luong, 
@@ -194,4 +162,5 @@ def api_permutations():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    # Chạy production trên Render thì nên để debug=False
+    app.run(host='0.0.0.0', port=port, debug=False)

@@ -1,10 +1,18 @@
-from flask import Flask, render_template, request, jsonify, g
+from flask import Flask, render_template, request, jsonify, g, send_from_directory 
 import sqlite3
 from logic import so_chinh_hop, liet_ke_chinh_hop, sinh_ke_tiep_chinh_hop, liet_ke_chinh_hop_co_trace
 import os
 
 app = Flask(__name__)
 DATABASE = 'history.db'
+
+# ==============================================================================
+# XỬ LÝ FAVICON 
+# ==============================================================================
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 # ==============================================================================
 # QUẢN LÝ DATABASE (Lưu lịch sử)

@@ -1,4 +1,4 @@
-# Chinh Hop Visualizer App (DT035)
+﻿# Chinh Hop Visualizer App (DT035)
 
 Dự án môn học Cấu trúc Dữ liệu và Giải thuật (INT13185) - Học viện Công nghệ Bưu chính Viễn thông.
 Được thiết kế và mở rộng thành một ứng dụng Web trực quan hóa thuật toán (Algorithm Visualizer) và đóng gói chuẩn production.
@@ -58,20 +58,29 @@ Truy cập giao diện tại: `http://localhost:5000`
 
 ## 🧪 Chạy kiểm thử tự động
 
-⚠️ Lưu ý quan trọng: Trước khi chạy lệnh kiểm thử, bạn cần kích hoạt môi trường ảo (Virtual Environment / Conda) đã cài đặt các thư viện trong requirements.txt. Nếu máy tính chưa có sẵn, khuyến nghị cài đặt Miniconda trước để tạo và quản lý môi trường ảo dễ dàng.
-Ví dụ với Conda:
+> **⚠️ Lưu ý quan trọng:**
+> Trước khi chạy lệnh kiểm thử, bạn cần kích hoạt môi trường ảo (Virtual Environment / Conda) đã cài đặt các thư viện trong `requirements.txt`.
+> Nếu máy tính chưa có sẵn, khuyến nghị cài đặt **Miniconda** trước để tạo và quản lý môi trường ảo dễ dàng.
 
-````bash
-#Tạo môi trường (nếu chưa có)
-conda create -n webapp python=3.11 -y
-
-#Thay webapp bằng tên môi trường thực tế của bạn
-conda activate webapp
+**Bước 1: Thiết lập môi trường với Conda**
 
 ```bash
-pytest tests/
+# Tạo môi trường mới (nếu chưa có)
+conda create -n webapp python=3.11 -y
 
-````
+# Kích hoạt môi trường (thay 'webapp' bằng tên môi trường thực tế của bạn)
+conda activate webapp
+
+# Cài đặt các thư viện cần thiết
+pip install -r requirements.txt
+```
+
+**Bước 2: Chạy kiểm thử**
+Sau khi môi trường đã được kích hoạt và cài đặt đầy đủ, chạy lệnh sau để thực thi toàn bộ test case:
+
+```bash
+pytest tests/ -v
+```
 
 ## 🌐 Triển khai Online (Live Demo)
 
@@ -82,7 +91,3 @@ pytest tests/
 
 - **Vũ Duy Khánh** - MSSV: N24DCDT039 - Lớp: D24CQDT01-N
 - Môn học: Cấu trúc dữ liệu và Giải thuật (INT13185) - Nhóm 03
-
-```
-
-```

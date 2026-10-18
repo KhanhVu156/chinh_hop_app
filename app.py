@@ -11,8 +11,9 @@ DATABASE = 'history.db'
 # ==============================================================================
 @app.route('/favicon.ico')
 def favicon():
+    # Đã sửa thành .png và mimetype='image/png'
     return send_from_directory(os.path.join(app.root_path, 'static'),
-                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
+                               'favicon.png', mimetype='image/png')
 
 # ==============================================================================
 # QUẢN LÝ DATABASE (Lưu lịch sử)

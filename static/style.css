@@ -63,7 +63,6 @@ body {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    /* Cho phép cuộn toàn trang */
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -103,32 +102,11 @@ body {
     color: var(--text-muted);
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 20px;
 }
 
 .header-author strong {
     color: var(--primary-color);
-}
-
-/* Nút chuyển đổi giao diện */
-.theme-toggle {
-    background-color: var(--bg-input);
-    color: var(--text-main);
-    border: 1px solid var(--border-color);
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: bold;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.theme-toggle:hover {
-    background-color: var(--bg-hover);
-    border-color: var(--primary-color);
 }
 
 .main-layout {
@@ -527,9 +505,6 @@ body {
 }
 
 .quiz-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding: 15px 20px;
     border-bottom: 1px solid var(--border-color);
     background: var(--bg-hover);
@@ -537,14 +512,12 @@ body {
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Chỉnh màu chữ tiêu đề Quiz cho dễ nhìn ở cả 2 chế độ */
 .quiz-title {
     border: none;
     padding: 0;
     background: transparent;
     color: var(--text-main);
-    /* Sẽ tự đổi màu đen/trắng tùy mode */
-    font-size: 16px;
+    font-size: 18px;
 }
 
 .quiz-option {
@@ -726,4 +699,96 @@ body {
     color: var(--text-main);
     font-size: 13px;
     line-height: 1.5;
+}
+
+/* ==============================================================================
+   TOGGLE SWITCH DARK/LIGHT MODE
+   ============================================================================== */
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon-sun,
+.icon-moon {
+    font-size: 18px;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+/* Khi ở chế độ Sáng: Mặt trời sáng rõ, Mặt trăng mờ đi */
+.icon-sun {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.icon-moon {
+    opacity: 0.4;
+    transform: scale(0.9);
+    filter: grayscale(100%);
+}
+
+/* Khi ở chế độ Tối: Mặt trăng sáng rõ, Mặt trời mờ đi */
+html.dark-mode .icon-sun {
+    opacity: 0.4;
+    transform: scale(0.9);
+    filter: grayscale(100%);
+}
+
+html.dark-mode .icon-moon {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Thiết kế công tắc gạt */
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+/* Ẩn checkbox mặc định */
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: .4s;
+    border-radius: 34px;
+    border: 1px solid var(--border-color);
+}
+
+/* Nút tròn bên trong */
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Khi được tích (Dark Mode) */
+input:checked+.slider {
+    background-color: var(--primary-color);
+}
+
+/* Nút tròn trượt sang phải */
+input:checked+.slider:before {
+    transform: translateX(24px);
 }

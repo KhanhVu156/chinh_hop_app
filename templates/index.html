@@ -30,9 +30,18 @@
         <span class="badge">DT035</span>
         <h1>Web Thuật Toán Chỉnh Hợp Không Lặp</h1>
       </div>
-      <div class="header-author" style="display: flex; align-items: center; gap: 15px;">
+      <div class="header-author" style="display: flex; align-items: center; gap: 20px;">
         <span>Sinh viên thực hiện: <strong>Vũ Duy Khánh (N24DCDT039)</strong></span>
-        <button id="theme-toggle" class="theme-toggle" title="Chuyển chế độ sáng/tối">🌙 Tối</button>
+        
+        <!-- Toggle Switch Dark/Light Mode -->
+        <div class="theme-switch-wrapper">
+            <span class="icon-sun">☀️</span>
+            <label class="theme-switch" for="checkbox-theme">
+                <input type="checkbox" id="checkbox-theme" />
+                <div class="slider round"></div>
+            </label>
+            <span class="icon-moon">🌙</span>
+        </div>
       </div>
     </header>
 
@@ -276,9 +285,9 @@
     {% if da_chay and not error and trace_data and che_do == 'hoc' and not co_rang_buoc %}
     <div class="quiz-section-wrapper" id="quiz-panel">
       <div class="quiz-box panel">
-        <div class="quiz-header">
-            <h2 class="panel-title quiz-title">🎯 Khu Vực Ôn Tập Tương Tác</h2>
-            <button id="btn-new-quiz" class="btn-control btn-primary" style="width: auto; height: 35px; padding: 0 15px; font-size: 13px;">Tạo câu hỏi ngẫu nhiên</button>
+        <div class="quiz-header" style="display: flex; flex-direction: column; align-items: flex-start; gap: 10px;">
+            <button id="btn-new-quiz" class="btn-control btn-primary" style="width: auto; height: 38px; padding: 0 20px; font-size: 14px;">Tạo câu hỏi ngẫu nhiên</button>
+            <h2 class="panel-title quiz-title" style="margin-top: 5px;">Khu Vực Ôn Tập Tương Tác</h2>
         </div>
         <div style="padding: 20px;">
             <p id="quiz-question" style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">Nhấn "Tạo câu hỏi ngẫu nhiên" để bắt đầu ôn tập kiến thức.</p>
@@ -313,32 +322,23 @@
       const quizFeedback = document.getElementById("quiz-feedback");
       const btnNewQuiz = document.getElementById("btn-new-quiz");
 
-      // Xử lý logic Dark/Light Mode
-      const themeToggleBtn = document.getElementById("theme-toggle");
+      // Xử lý logic Dark/Light Mode (Toggle Switch)
+      const themeCheckbox = document.getElementById("checkbox-theme");
       const htmlEl = document.documentElement;
 
-      function updateThemeButton() {
-          if (htmlEl.classList.contains('dark-mode')) {
-              themeToggleBtn.innerHTML = '☀️ Sáng';
-          } else {
-              themeToggleBtn.innerHTML = '🌙 Tối';
-          }
-      }
-      
-      // Khởi tạo trạng thái ban đầu
       if (localStorage.getItem('theme') === 'dark') {
           htmlEl.classList.add('dark-mode');
+          themeCheckbox.checked = true;
       }
-      updateThemeButton();
 
-      themeToggleBtn.addEventListener('click', () => {
-          htmlEl.classList.toggle('dark-mode');
-          if (htmlEl.classList.contains('dark-mode')) {
+      themeCheckbox.addEventListener('change', () => {
+          if (themeCheckbox.checked) {
+              htmlEl.classList.add('dark-mode');
               localStorage.setItem('theme', 'dark');
           } else {
+              htmlEl.classList.remove('dark-mode');
               localStorage.setItem('theme', 'light');
           }
-          updateThemeButton();
       });
 
       // Xử lý sự kiện nút Validation

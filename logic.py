@@ -18,12 +18,13 @@ def so_chinh_hop(n, k):
         return 1
     return math.factorial(n) // math.factorial(n - k)
 
-def thu_chinh_hop(i, k, n, x, used, ket_qua):
+def thu_chinh_hop(i, k, n, x, used, ket_qua, elements=None):
     """Hàm đệ quy thử các giá trị cho vị trí thứ i."""
     # Điều kiện dừng: Đã điền đủ k vị trí
     if i > k:
-        # Lưu lại bản sao của dãy hiện tại (tránh tham chiếu bị thay đổi)
-        ket_qua.append(list(x[1:])) 
+        # Nếu có mảng ký tự, map giá trị số sang ký tự tương ứng
+        res = [elements[v-1] if elements else v for v in x[1:]]
+        ket_qua.append(res) 
         return
 
     # Thử các giá trị từ 1 đến n
@@ -34,21 +35,21 @@ def thu_chinh_hop(i, k, n, x, used, ket_qua):
             used[j] = True # Đánh dấu đã dùng
             
             # Đệ quy xử lý vị trí tiếp theo
-            thu_chinh_hop(i + 1, k, n, x, used, ket_qua)
+            thu_chinh_hop(i + 1, k, n, x, used, ket_qua, elements)
             
             # Tư duy: Quay lui (Backtrack)
             # Sau khi thử xong nhánh với j, ta phải bỏ đánh dấu để 
             # các nhánh khác có thể sử dụng lại giá trị j.
             used[j] = False
 
-def liet_ke_chinh_hop(n, k):
+def liet_ke_chinh_hop(n, k, elements=None):
     """Hàm chính khởi tạo và gọi đệ quy."""
     if k < 0 or k > n:
         return []
     x = [0] * (k + 1) # Mảng 1-based
     used = [False] * (n + 1) # Mảng 1-based
     ket_qua = []
-    thu_chinh_hop(1, k, n, x, used, ket_qua)
+    thu_chinh_hop(1, k, n, x, used, ket_qua, elements)
     return ket_qua
 
 def sinh_ke_tiep_chinh_hop(n, k):
@@ -104,6 +105,7 @@ def liet_ke_chinh_hop_co_trace(n, k, max_steps=5000):
     Trả về danh sách các bước để Frontend vẽ animation.
     TỐI ƯU: Thêm tham số max_steps để giới hạn số bước ghi lại,
     tránh tạo ra hàng trăm nghìn bước gây treo trình duyệt.
+    NÂNG CẤP: Thêm call_stack và pseudo_line để phục vụ mục tiêu 1.
     """
     if k < 0 or k > n: return [], []
     
@@ -111,52 +113,43 @@ def liet_ke_chinh_hop_co_trace(n, k, max_steps=5000):
     used = [False] * (n + 1)
     ket_qua = []
     trace = []
+    call_stack = []
 
-    def thu_co_trace(i):
-        # TỐI ƯU: Chỉ ghi trace nếu chưa vượt quá max_steps
+    def add_trace(step_type, message, pseudo_line):
         if len(trace) < max_steps:
             trace.append({
-                "type": "CALL", 
+                "type": step_type, 
                 "x": list(x[1:]), 
                 "used": list(used[1:]), 
-                "message": f"Gọi đệ quy tại vị trí i = {i}"
+                "stack": list(call_stack),
+                "pseudo_line": pseudo_line,
+                "message": message
             })
+
+    def thu_co_trace(i):
+        call_stack.append(i)
+        add_trace("CALL", f"Gọi đệ quy thu({i})", 1)
 
         if i > k:
             ket_qua.append(list(x[1:]))
-            if len(trace) < max_steps:
-                trace.append({
-                    "type": "SAVE", 
-                    "x": list(x[1:]), 
-                    "used": list(used[1:]), 
-                    "message": f"Đã điền đủ {k} vị trí. Lưu kết quả: {x[1:]}"
-                })
+            add_trace("SAVE", f"Đã điền đủ {k} vị trí. Lưu kết quả: {x[1:]}", 2)
+            call_stack.pop()
             return
 
         for j in range(1, n + 1):
+            add_trace("LOOP", f"Xét phần tử j = {j}", 4)
             if not used[j]:
-                # Bước chọn
                 x[i] = j
                 used[j] = True
-                if len(trace) < max_steps:
-                    trace.append({
-                        "type": "SELECT", 
-                        "x": list(x[1:]), 
-                        "used": list(used[1:]), 
-                        "message": f"Thử chọn {j} cho vị trí {i}"
-                    })
+                add_trace("SELECT", f"Chọn {j} cho vị trí {i}, đánh dấu used[{j}]", 6)
                 
                 thu_co_trace(i + 1)
                 
-                # Bước quay lui
                 used[j] = False
-                if len(trace) < max_steps:
-                    trace.append({
-                        "type": "BACKTRACK", 
-                        "x": list(x[1:]), 
-                        "used": list(used[1:]), 
-                        "message": f"Quay lui: Bỏ đánh dấu {j} tại vị trí {i}"
-                    })
+                add_trace("BACKTRACK", f"Quay lui: Bỏ chọn {j}, bỏ đánh dấu used[{j}]", 8)
+            else:
+                add_trace("SKIP", f"Bỏ qua j = {j} vì used[{j}] đang True", 5)
+        call_stack.pop()
 
     thu_co_trace(1)
     return ket_qua, trace
@@ -180,17 +173,27 @@ def kiem_tra_rang_buoc(day, rang_buoc):
 def liet_ke_sinh_roi_loc(n, k, rang_buoc=None):
     """Phương pháp 1: Sinh tất cả chỉnh hợp, sau đó lọc theo ràng buộc."""
     tat_ca = liet_ke_chinh_hop(n, k)
-    if not rang_buoc: return tat_ca
-    return [day for day in tat_ca if kiem_tra_rang_buoc(day, rang_buoc)]
+    if not rang_buoc: return tat_ca, 0
+    
+    hop_le = []
+    so_nhanh_loai = 0
+    for day in tat_ca:
+        if kiem_tra_rang_buoc(day, rang_buoc):
+            hop_le.append(day)
+        else:
+            so_nhanh_loai += 1
+    return hop_le, so_nhanh_loai
 
 def liet_ke_cat_nhanh(n, k, rang_buoc=None):
     """Phương pháp 2: Quay lui có cắt nhánh (kiểm tra ràng buộc ngay khi xây dựng)."""
-    if k < 0 or k > n: return []
+    if k < 0 or k > n: return [], 0
     x = [0] * (k + 1)
     used = [False] * (n + 1)
     ket_qua = []
+    so_nhanh_cat = 0
     
     def thu(i):
+        nonlocal so_nhanh_cat
         if i > k:
             ket_qua.append(list(x[1:]))
             return
@@ -205,26 +208,29 @@ def liet_ke_cat_nhanh(n, k, rang_buoc=None):
                         a, b = rang_buoc['not_adjacent']
                         if (x[i-1] == a and j == b) or (x[i-1] == b and j == a):
                             hop_le = False
+                
                 if hop_le:
                     x[i] = j
                     used[j] = True
                     thu(i + 1)
                     used[j] = False
+                else:
+                    so_nhanh_cat += 1
     thu(1)
-    return ket_qua
+    return ket_qua, so_nhanh_cat
 
 def do_hieu_qua(n, k, rang_buoc=None):
     """Đo thời gian và so sánh 2 phương pháp."""
     start1 = time.perf_counter()
-    kq1 = liet_ke_sinh_roi_loc(n, k, rang_buoc)
+    kq1, so_nhanh_loai = liet_ke_sinh_roi_loc(n, k, rang_buoc)
     time1 = (time.perf_counter() - start1) * 1000
     
     start2 = time.perf_counter()
-    kq2 = liet_ke_cat_nhanh(n, k, rang_buoc)
+    kq2, so_nhanh_cat = liet_ke_cat_nhanh(n, k, rang_buoc)
     time2 = (time.perf_counter() - start2) * 1000
     
     return {
-        "sinh_roi_loc": {"so_nghiem": len(kq1), "thoi_gian_ms": round(time1, 4)},
-        "cat_nhanh": {"so_nghiem": len(kq2), "thoi_gian_ms": round(time2, 4)},
+        "sinh_roi_loc": {"so_nghiem": len(kq1), "thoi_gian_ms": round(time1, 4), "nhanh_loai": so_nhanh_loai},
+        "cat_nhanh": {"so_nghiem": len(kq2), "thoi_gian_ms": round(time2, 4), "nhanh_loai": so_nhanh_cat},
         "hop_le": kq1 == kq2
     }

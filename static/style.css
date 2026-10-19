@@ -513,3 +513,87 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--text-muted);
 }
+
+/* Thêm CSS cho Pseudo-code, Stack, Quiz */
+.pseudo-code {
+    background: var(--bg-log);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 10px;
+    font-family: monospace;
+    margin-bottom: 15px;
+    font-size: 13px;
+}
+
+.pseudo-line {
+    padding: 2px 5px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    color: var(--text-muted);
+}
+
+.pseudo-active {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+}
+
+.stack-container {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.stack-item {
+    padding: 4px 8px;
+    background: var(--success-color);
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.speed-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-hover);
+    padding: 5px 15px;
+    border-radius: 6px;
+}
+
+.quiz-box {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid var(--primary-color);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.quiz-option {
+    display: block;
+    margin: 5px 0;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+}
+
+.quiz-option:hover {
+    background: var(--bg-hover);
+}
+
+.quiz-feedback {
+    font-weight: bold;
+    margin-top: 10px;
+    display: none;
+}

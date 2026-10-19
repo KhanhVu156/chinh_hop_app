@@ -21,7 +21,7 @@
     </header>
 
     <div class="main-layout">
-      <!-- CỘT TRÁI: CẤU HÌNH & KẾT QUẢ -->
+      <!-- CỘT TRÁI -->
       <aside class="panel config-panel">
         <h2 class="panel-title">CẤU HÌNH BÀI TOÁN</h2>
         <form method="POST" class="input-form">
@@ -47,7 +47,39 @@
             />
           </div>
 
-          <!-- Checkbox Ràng buộc mới -->
+          <div class="form-group">
+            <label>Chế độ hiển thị:</label>
+            <select
+              name="che_do"
+              style="
+                padding: 10px;
+                border-radius: 6px;
+                border: 1px solid var(--border-color);
+                background: var(--bg-input);
+                color: var(--text-main);
+              "
+            >
+              <option value="hoc" {% if che_do="" ="hoc" %}selected{% endif %}>
+                Học từng bước
+              </option>
+              <option
+                value="liet_ke"
+                {%
+                if
+                che_do=""
+                ="liet_ke"
+                %}selected{%
+                endif
+                %}
+              >
+                Chỉ liệt kê
+              </option>
+              <option value="dem" {% if che_do="" ="dem" %}selected{% endif %}>
+                Chỉ đếm số lượng
+              </option>
+            </select>
+          </div>
+
           <div
             class="form-group"
             style="flex-direction: row; align-items: center; gap: 10px"
@@ -65,7 +97,7 @@
               %}
             />
             <label for="co_rang_buoc" style="font-size: 13px; cursor: pointer"
-              >Thêm ràng buộc (1 không đứng đầu, 2-3 không cạnh nhau)</label
+              >Thêm ràng buộc (A không đầu, B-C không cạnh)</label
             >
           </div>
 
@@ -80,70 +112,68 @@
           <p class="highlight">{{ so_luong }}</p>
         </div>
 
-        <!-- Hiển thị bảng so sánh khi có ràng buộc -->
         {% if co_rang_buoc and so_sanh %}
         <div class="result-box mt-20">
-          <h3>So sánh hiệu quả thuật toán</h3>
+          <h3>So sánh hiệu quả</h3>
           <table class="history-table">
             <tr>
               <th>Phương pháp</th>
-              <th>Số nghiệm</th>
+              <th>Nghiệm</th>
+              <th>Nhánh loại</th>
               <th>Thời gian (ms)</th>
             </tr>
             <tr>
               <td>Sinh rồi lọc</td>
               <td>{{ so_sanh.sinh_roi_loc.so_nghiem }}</td>
+              <td>{{ so_sanh.sinh_roi_loc.nhanh_loai }}</td>
               <td>{{ so_sanh.sinh_roi_loc.thoi_gian_ms }}</td>
             </tr>
             <tr>
               <td>Cắt nhánh</td>
               <td>{{ so_sanh.cat_nhanh.so_nghiem }}</td>
+              <td>{{ so_sanh.cat_nhanh.nhanh_loai }}</td>
               <td>{{ so_sanh.cat_nhanh.thoi_gian_ms }}</td>
             </tr>
           </table>
-          <p style="font-size: 12px; margin-top: 5px; color: var(--text-muted)">
-            * Hai phương pháp trả về tập nghiệm {% if so_sanh.hop_le %} GIỐNG
-            NHAU {% else %} KHÁC NHAU (LỖI) {% endif %}.
-          </p>
         </div>
-        {% endif %}
-
+        {% endif %} {% if che_do != 'dem' %}
         <div class="result-box mt-20">
-          <h3>Kết quả Đệ quy</h3>
-
+          <h3>Kết quả liệt kê</h3>
           {% if total_pages > 1 %}
           <ul class="pagination">
             <li class="page-item {% if page == 1 %}disabled{% endif %}">
-              <a class="page-link" href="?page=1&n={{ n }}&k={{ k }}"
+              <a
+                class="page-link"
+                href="?page=1&n={{ n }}&k={{ k }}&che_do={{ che_do }}&co_rang_buoc={{ '1' if co_rang_buoc else '0' }}"
                 >&laquo;&laquo;</a
               >
             </li>
             <li class="page-item {% if page == 1 %}disabled{% endif %}">
               <a
                 class="page-link"
-                href="?page={{ page - 1 }}&n={{ n }}&k={{ k }}"
+                href="?page={{ page - 1 }}&n={{ n }}&k={{ k }}&che_do={{ che_do }}&co_rang_buoc={{ '1' if co_rang_buoc else '0' }}"
                 >&laquo;</a
               >
             </li>
-
             {% for p in page_range %} {% if p == '...' %}
             <li class="page-item disabled">
               <span class="page-link">...</span>
             </li>
             {% else %}
             <li class="page-item {% if p == page %}active{% endif %}">
-              <a class="page-link" href="?page={{ p }}&n={{ n }}&k={{ k }}"
+              <a
+                class="page-link"
+                href="?page={{ p }}&n={{ n }}&k={{ k }}&che_do={{ che_do }}&co_rang_buoc={{ '1' if co_rang_buoc else '0' }}"
                 >{{ p }}</a
               >
             </li>
             {% endif %} {% endfor %}
-
             <li
               class="page-item {% if page == total_pages %}disabled{% endif %}"
             >
               <a
                 class="page-link"
-                href="?page={{ page + 1 }}&n={{ n }}&k={{ k }}"
+                href="?page={{ page + 1 }}&n={{ n }}&k={{ k }}&che_do={{ che_do }}&co_rang_buoc={{ '1' if co_rang_buoc else '0' }}"
                 >&raquo;</a
               >
             </li>
@@ -152,80 +182,134 @@
             >
               <a
                 class="page-link"
-                href="?page={{ total_pages }}&n={{ n }}&k={{ k }}"
+                href="?page={{ total_pages }}&n={{ n }}&k={{ k }}&che_do={{ che_do }}&co_rang_buoc={{ '1' if co_rang_buoc else '0' }}"
                 >&raquo;&raquo;</a
               >
             </li>
           </ul>
           {% endif %}
-
           <div class="array-list">
             {% for day in ket_qua_de_quy %}
             <span class="array-item">[{{ day | join(', ') }}]</span>
             {% endfor %}
           </div>
         </div>
-        {% endif %}
+        {% endif %} {% endif %}
       </aside>
 
-      <!-- CỘT GIỮA: MÔ PHỎNG TRỰC QUAN -->
+      <!-- CỘT GIỮA -->
       <main class="panel visual-panel">
-        <h2 class="panel-title">MÔ PHỎNG QUÁ TRÌNH QUAY LUI</h2>
+        <h2 class="panel-title">MÔ PHỎNG & LUYỆN TẬP</h2>
 
-        {% if da_chay and not error and trace_data %}
+        {% if da_chay and not error and trace_data and che_do == 'hoc' and not
+        co_rang_buoc %}
         <div class="visualizer-container">
-          <div class="visualizer-display">
-            <div class="state-box">
-              <h3>Mảng x (Chỉnh hợp đang xây dựng)</h3>
-              <div id="vis-x" class="array-visual"></div>
+          <div class="visualizer-display" style="display: flex; gap: 20px">
+            <!-- Mã giả & Stack -->
+            <div style="flex: 1">
+              <div class="state-box">
+                <h3>Mã giả</h3>
+                <div class="pseudo-code" id="pseudo-code">
+                  <div class="pseudo-line" data-line="1">1. Hàm thu(i):</div>
+                  <div class="pseudo-line" data-line="2">
+                    2. &nbsp;&nbsp;Nếu i > k: Lưu kết quả, Return
+                  </div>
+                  <div class="pseudo-line" data-line="3">
+                    3. &nbsp;&nbsp;Vòng lặp j từ 1 đến n:
+                  </div>
+                  <div class="pseudo-line" data-line="4">
+                    4. &nbsp;&nbsp;&nbsp;&nbsp;Nếu used[j] == False:
+                  </div>
+                  <div class="pseudo-line" data-line="5">
+                    5. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Bỏ qua nếu used[j]
+                    == True)
+                  </div>
+                  <div class="pseudo-line" data-line="6">
+                    6. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x[i] = j, used[j] =
+                    True
+                  </div>
+                  <div class="pseudo-line" data-line="7">
+                    7. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;thu(i + 1)
+                  </div>
+                  <div class="pseudo-line" data-line="8">
+                    8. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;used[j] = False (Quay
+                    lui)
+                  </div>
+                </div>
+              </div>
+              <div class="state-box mt-20">
+                <h3>Ngăn xếp lời gọi</h3>
+                <div class="stack-container" id="vis-stack"></div>
+              </div>
             </div>
-            <div class="state-box">
-              <h3>Mảng used (Trạng thái đánh dấu)</h3>
-              <div id="vis-used" class="array-visual"></div>
-            </div>
-            <div class="state-box action-box">
-              <h3>Hành động hiện tại</h3>
-              <p id="vis-action">Nhấn "Bước tiếp theo" để bắt đầu</p>
+
+            <!-- Mảng & Hành động -->
+            <div style="flex: 1">
+              <div class="state-box">
+                <h3>Mảng x</h3>
+                <div id="vis-x" class="array-visual"></div>
+              </div>
+              <div class="state-box">
+                <h3>Mảng used</h3>
+                <div id="vis-used" class="array-visual"></div>
+              </div>
+              <div class="state-box action-box">
+                <h3>Hành động</h3>
+                <p id="vis-action">Nhấn "Tự động chạy" để bắt đầu</p>
+              </div>
             </div>
           </div>
 
+          <!-- QUIZ -->
+          <div class="quiz-box" id="quiz-panel" style="display: none">
+            <h3 style="color: var(--primary-color); margin-bottom: 10px">
+              🎯 Luyện tập tương tác
+            </h3>
+            <p id="quiz-question">Đang tải...</p>
+            <div id="quiz-options"></div>
+            <p class="quiz-feedback" id="quiz-feedback"></p>
+          </div>
+
+          <!-- CONTROLS -->
           <div class="controls">
-            <button id="btn-step" class="btn-control">Bước tiếp theo</button>
-            <button id="btn-reset" class="btn-control btn-danger">
-              Chạy lại từ đầu
+            <button id="btn-back" class="btn-control" disabled>
+              Bước trước
             </button>
+            <button id="btn-play" class="btn-control btn-primary">
+              Tự động chạy
+            </button>
+            <button id="btn-step" class="btn-control">Bước tiếp</button>
+            <button id="btn-reset" class="btn-control btn-danger">Reset</button>
+            <div class="speed-control">
+              <label>Tốc độ:</label>
+              <input
+                type="range"
+                id="speed"
+                min="100"
+                max="2000"
+                value="800"
+                step="100"
+              />
+            </div>
           </div>
-
-          {% if trace_truncated %}
-          <div class="warning-box">
-            <p class="warning-title">* Lưu ý về hiệu năng mô phỏng:</p>
-            <p class="warning-desc">
-              Chương trình đã tính toán chính xác toàn bộ
-              <strong>{{ so_luong }}</strong> kết quả. Tuy nhiên, Visualizer chỉ
-              hiển thị <strong>5.000 bước</strong> đầu tiên để tránh treo trình
-              duyệt.
-            </p>
-          </div>
-          {% endif %}
         </div>
-        {% elif da_chay and not error and (not trace_data or co_rang_buoc) %}
+        {% elif da_chay and not error %}
         <div class="empty-state">
-          <p>Mô phỏng từng bước bị tắt khi bật ràng buộc hoặc k = 0.</p>
+          <p>Mô phỏng bị tắt (Do chọn chế độ khác hoặc có ràng buộc).</p>
         </div>
         {% else %}
         <div class="empty-state">
-          <p>Vui lòng nhập n và k ở cột bên trái để xem mô phỏng.</p>
+          <p>Vui lòng nhập n và k ở cột bên trái.</p>
         </div>
         {% endif %}
       </main>
 
-      <!-- CỘT PHẢI: LOG & LỊCH SỬ -->
+      <!-- CỘT PHẢI -->
       <aside class="panel log-panel">
         <h2 class="panel-title">NHẬT KÝ THỰC THI</h2>
         <div class="log-container" id="log-container">
-          <p class="log-placeholder">Hệ thống chưa chạy...</p>
+          <p class="log-placeholder">Chưa chạy...</p>
         </div>
-
         {% if lich_su %}
         <div class="history-section">
           <h3>Lịch sử gần đây</h3>
@@ -233,13 +317,23 @@
             <tr>
               <th>n</th>
               <th>k</th>
-              <th>Kết quả</th>
+              <th>KQ</th>
+              <th>Ràng buộc</th>
+              <th>Hành động</th>
             </tr>
             {% for row in lich_su %}
             <tr>
               <td>{{ row['n'] }}</td>
               <td>{{ row['k'] }}</td>
               <td>{{ row['so_luong'] }}</td>
+              <td>{{ 'Có' if row['co_rang_buoc'] else 'Không' }}</td>
+              <td>
+                <a
+                  href="?n={{ row['n'] }}&k={{ row['k'] }}&che_do={{ row['che_do'] }}&co_rang_buoc={{ row['co_rang_buoc'] }}"
+                  style="color: var(--primary-color)"
+                  >Chạy lại</a
+                >
+              </td>
             </tr>
             {% endfor %}
           </table>
@@ -248,17 +342,28 @@
       </aside>
     </div>
 
-    <!-- Javascript xử lý Animation Mô phỏng -->
     <script>
       const traceData = {{ trace_data | tojson | safe }};
       let currentStep = -1;
+      let playInterval = null;
 
+      const btnPlay = document.getElementById("btn-play");
       const btnStep = document.getElementById("btn-step");
+      const btnBack = document.getElementById("btn-back");
       const btnReset = document.getElementById("btn-reset");
+      const speedRange = document.getElementById("speed");
+
       const visX = document.getElementById("vis-x");
       const visUsed = document.getElementById("vis-used");
+      const visStack = document.getElementById("vis-stack");
       const visAction = document.getElementById("vis-action");
       const logContainer = document.getElementById("log-container");
+      const pseudoLines = document.querySelectorAll(".pseudo-line");
+
+      const quizPanel = document.getElementById("quiz-panel");
+      const quizQuestion = document.getElementById("quiz-question");
+      const quizOptions = document.getElementById("quiz-options");
+      const quizFeedback = document.getElementById("quiz-feedback");
 
       function renderArray(container, arr, isUsed = false) {
           container.innerHTML = "";
@@ -272,49 +377,116 @@
                   box.innerText = val === 0 ? "-" : val;
                   if (val !== 0) box.classList.add("box-active");
               }
-              const label = document.createElement("span");
-              label.className = "vis-index";
-              label.innerText = index + 1;
-              box.appendChild(label);
               container.appendChild(box);
           });
       }
 
-      function addLog(message, type) {
-          const p = document.createElement("p");
-          p.className = `log-item log-${type}`;
-          p.innerText = `> ${message}`;
-          logContainer.appendChild(p);
-          logContainer.scrollTop = logContainer.scrollHeight;
+      function renderStack(stackArr) {
+          visStack.innerHTML = "";
+          stackArr.forEach((val) => {
+              const item = document.createElement("div");
+              item.className = "stack-item";
+              item.innerText = `thu(${val})`;
+              visStack.appendChild(item);
+          });
+      }
+
+      function highlightPseudo(lineNumber) {
+          pseudoLines.forEach(el => {
+              el.classList.remove("pseudo-active");
+              if (parseInt(el.getAttribute("data-line")) === lineNumber) {
+                  el.classList.add("pseudo-active");
+              }
+          });
+      }
+
+      function generateQuiz(step) {
+          if (!step) return;
+          quizPanel.style.display = "block";
+          quizFeedback.style.display = "none";
+          quizOptions.innerHTML = "";
+
+          if (step.type === "SELECT") {
+              quizQuestion.innerText = `Tại vị trí ${step.stack.length}, phần tử ${step.x[step.stack.length-1]} vừa được chọn. Bước tiếp theo là gì?`;
+              createOptions(["Gọi đệ quy tiếp", "Lưu kết quả", "Quay lui"], "Gọi đệ quy tiếp", "Đúng rồi! Thuật toán sẽ gọi thu(i+1).");
+          } else if (step.type === "BACKTRACK") {
+              quizQuestion.innerText = `Hành động quay lui đang diễn ra. Điều gì xảy ra với mảng used?`;
+              createOptions(["Đánh dấu True", "Bỏ đánh dấu False", "Không đổi"], "Bỏ đánh dấu False", "Đúng rồi! Phải bỏ đánh dấu để nhánh khác dùng lại.");
+          } else if (step.type === "SAVE") {
+              quizQuestion.innerText = `Đã tìm thấy nghiệm! Chương trình sẽ làm gì?`;
+              createOptions(["Dừng chương trình", "Quay lui tìm nghiệm mới", "Xóa mảng x"], "Quay lui tìm nghiệm mới", "Đúng rồi! Thuật toán quay lui để thử nhánh khác.");
+          }
+      }
+
+      function createOptions(opts, correct, feedback) {
+          opts.forEach(opt => {
+              const div = document.createElement("div");
+              div.className = "quiz-option";
+              div.innerText = opt;
+              div.onclick = () => {
+                  if (opt === correct) {
+                      quizFeedback.innerText = "✅ " + feedback;
+                      quizFeedback.style.color = "var(--success-color)";
+                  } else {
+                      quizFeedback.innerText = "❌ Sai rồi. Hãy xem lại bước hiện tại!";
+                      quizFeedback.style.color = "var(--danger-color)";
+                  }
+                  quizFeedback.style.display = "block";
+              };
+              quizOptions.appendChild(div);
+          });
+      }
+
+      function updateUI() {
+          if (currentStep >= 0 && currentStep < traceData.length) {
+              const step = traceData[currentStep];
+              visAction.innerText = step.message;
+              renderArray(visX, step.x, false);
+              renderArray(visUsed, step.used, true);
+              renderStack(step.stack);
+              highlightPseudo(step.pseudo_line);
+              generateQuiz(step);
+
+              if (btnBack.disabled) {
+                  let type = step.type === "SELECT" ? "success" : step.type === "BACKTRACK" ? "warning" : step.type === "SAVE" ? "highlight" : "normal";
+                  const p = document.createElement("p");
+                  p.className = `log-item log-${type}`;
+                  p.innerText = `> ${step.message}`;
+                  logContainer.appendChild(p);
+                  logContainer.scrollTop = logContainer.scrollHeight;
+              }
+
+              btnBack.disabled = (currentStep === 0);
+              btnStep.disabled = (currentStep === traceData.length - 1);
+              if (btnStep.disabled) { btnStep.innerText = "Hết"; pauseAuto(); }
+          }
+      }
+
+      function stepForward() { if (currentStep < traceData.length - 1) { currentStep++; updateUI(); } }
+      function pauseAuto() { if (playInterval) { clearInterval(playInterval); playInterval = null; btnPlay.innerText = "Tự động chạy"; } }
+      function startAuto() {
+          if (playInterval) pauseAuto();
+          else {
+              if (currentStep >= traceData.length - 1) currentStep = -1;
+              btnPlay.innerText = "Tạm dừng";
+              playInterval = setInterval(stepForward, parseInt(speedRange.value));
+          }
       }
 
       if (btnStep && traceData.length > 0) {
-          btnStep.addEventListener("click", () => {
-              if (currentStep < traceData.length - 1) {
-                  currentStep++;
-                  const step = traceData[currentStep];
-                  visAction.innerText = step.message;
-                  renderArray(visX, step.x, false);
-                  renderArray(visUsed, step.used, true);
-                  let type = "normal";
-                  if (step.type === "SELECT") type = "success";
-                  if (step.type === "BACKTRACK") type = "warning";
-                  if (step.type === "SAVE") type = "highlight";
-                  addLog(step.message, type);
-              } else {
-                  btnStep.disabled = true;
-                  btnStep.innerText = "Đã kết thúc";
-              }
-          });
-
+          btnStep.addEventListener("click", () => { pauseAuto(); stepForward(); });
+          btnBack.addEventListener("click", () => { pauseAuto(); if (currentStep > 0) { currentStep--; updateUI(); } });
+          btnPlay.addEventListener("click", startAuto);
           btnReset.addEventListener("click", () => {
-              currentStep = -1;
-              btnStep.disabled = false;
-              btnStep.innerText = "Bước tiếp theo";
-              visAction.innerText = "Nhấn 'Bước tiếp theo' để bắt đầu";
-              visX.innerHTML = "";
-              visUsed.innerHTML = "";
-              logContainer.innerHTML = '<p class="log-placeholder">Đã reset. Nhấn Bước tiếp theo...</p>';
+              pauseAuto(); currentStep = -1; btnStep.disabled = false; btnStep.innerText = "Bước tiếp";
+              visAction.innerText = "Nhấn 'Tự động chạy'";
+              visX.innerHTML = ""; visUsed.innerHTML = ""; visStack.innerHTML = "";
+              quizPanel.style.display = "none";
+              logContainer.innerHTML = '<p class="log-placeholder">Đã reset.</p>';
+              highlightPseudo(0);
+          });
+          speedRange.addEventListener("input", () => {
+              if (playInterval) { clearInterval(playInterval); playInterval = setInterval(stepForward, parseInt(speedRange.value)); }
           });
       }
     </script>

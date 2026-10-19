@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Web Thuật Toán Chỉnh Hợp Không Lặp</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <style>
+        /* Thêm CSS để khung mã giả tự cuộn nếu quá dài */
+        .pseudo-code { 
+            background: var(--bg-log); 
+            border: 1px solid var(--border-color); 
+            border-radius: 6px; 
+            padding: 10px; 
+            font-family: monospace; 
+            font-size: 13px;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+    </style>
   </head>
   <body>
     <header class="app-header">
@@ -179,6 +192,7 @@
           <div class="controls">
             <button id="btn-back" class="btn-control" disabled>Bước trước</button>
             <button id="btn-play" class="btn-control btn-primary">Tự động chạy</button>
+            <button id="btn-skip" class="btn-control">Đến cuối (Skip)</button>
             <button id="btn-step" class="btn-control">Bước tiếp</button>
             <button id="btn-reset" class="btn-control btn-danger">Reset</button>
             <div class="speed-control">
@@ -239,6 +253,7 @@
 
       const btnPlay = document.getElementById("btn-play");
       const btnStep = document.getElementById("btn-step");
+      const btnSkip = document.getElementById("btn-skip");
       const btnBack = document.getElementById("btn-back");
       const btnReset = document.getElementById("btn-reset");
       const speedRange = document.getElementById("speed");
@@ -292,6 +307,13 @@
 
       function generateQuiz(step) {
           if (!step) return;
+          
+          // SỬA LỖI: Nếu không phải là bước quan trọng, ẩn Quiz đi
+          if (step.type !== "SELECT" && step.type !== "BACKTRACK" && step.type !== "SAVE") {
+              quizPanel.style.display = "none";
+              return;
+          }
+
           quizPanel.style.display = "block";
           quizFeedback.style.display = "none";
           quizOptions.innerHTML = "";
@@ -365,6 +387,15 @@
 
       if (btnStep && traceData.length > 0) {
           btnStep.addEventListener("click", () => { pauseAuto(); stepForward(); });
+          
+          btnSkip.addEventListener("click", () => {
+              pauseAuto();
+              if (traceData.length > 0) {
+                  currentStep = traceData.length - 1;
+                  updateUI();
+              }
+          });
+
           btnBack.addEventListener("click", () => { pauseAuto(); if (currentStep > 0) { currentStep--; updateUI(); } });
           btnPlay.addEventListener("click", startAuto);
           btnReset.addEventListener("click", () => {

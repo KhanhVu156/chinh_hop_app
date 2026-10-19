@@ -389,22 +389,23 @@ body {
     gap: 15px;
     margin-top: 15px;
     padding-bottom: 15px;
+    width: 100%;
 }
 
 .button-group {
     display: flex;
-    gap: 15px;
+    gap: 10px;
     justify-content: center;
     align-items: center;
-    /* Căn giữa hoàn hảo */
-    flex-wrap: wrap;
+    width: 100%;
+    flex-wrap: nowrap;
+    /* Ép buộc 5 nút nằm trên 1 hàng ngang */
 }
 
 .btn-control {
-    width: 145px;
-    /* Tăng chiều rộng để chứa chữ dài */
+    flex: 1;
+    /* Chìa khóa: Chia đều không gian cho 5 nút */
     height: 42px;
-    /* Tăng chiều cao cho cân đối */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -414,16 +415,12 @@ body {
     cursor: pointer;
     font-weight: bold;
     color: var(--text-main);
-    font-size: 14px;
-    padding: 0 10px;
+    font-size: 13px;
+    padding: 0 5px;
     box-sizing: border-box;
     transition: all 0.2s ease;
     white-space: nowrap;
-    /* Không cho chữ rớt dòng */
-    flex-shrink: 0;
-    /* Không cho nút bị bóp méo */
     line-height: 1;
-    /* Chống lún chữ */
 }
 
 .btn-control:hover {
@@ -458,6 +455,7 @@ body {
 .speed-control {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     background: var(--bg-hover);
     padding: 8px 20px;

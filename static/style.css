@@ -23,28 +23,27 @@
     --shadow-color: rgba(0, 0, 0, 0.1);
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg-body: #0f172a;
-        --bg-panel: #1e293b;
-        --bg-input: #0f172a;
-        --bg-hover: #334155;
-        --bg-log: #0f172a;
-        --bg-box: #334155;
-        --text-main: #e2e8f0;
-        --text-muted: #94a3b8;
-        --text-inverse: #ffffff;
-        --border-color: #334155;
-        --border-log: #334155;
-        --primary-color: #3b82f6;
-        --primary-hover: #2563eb;
-        --success-color: #10b981;
-        --success-hover: #059669;
-        --warning-color: #f59e0b;
-        --danger-color: #ef4444;
-        --danger-hover: #dc2626;
-        --shadow-color: rgba(0, 0, 0, 0.5);
-    }
+/* Chuyển sang Dark Mode bằng Class */
+html.dark-mode {
+    --bg-body: #0f172a;
+    --bg-panel: #1e293b;
+    --bg-input: #0f172a;
+    --bg-hover: #334155;
+    --bg-log: #0f172a;
+    --bg-box: #334155;
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-inverse: #ffffff;
+    --border-color: #334155;
+    --border-log: #334155;
+    --primary-color: #3b82f6;
+    --primary-hover: #2563eb;
+    --success-color: #10b981;
+    --success-hover: #059669;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --danger-hover: #dc2626;
+    --shadow-color: rgba(0, 0, 0, 0.5);
 }
 
 /* ==============================================================================
@@ -78,6 +77,7 @@ body {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .header-title {
@@ -101,10 +101,34 @@ body {
 .header-author {
     font-size: 14px;
     color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 .header-author strong {
     color: var(--primary-color);
+}
+
+/* Nút chuyển đổi giao diện */
+.theme-toggle {
+    background-color: var(--bg-input);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.theme-toggle:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--primary-color);
 }
 
 .main-layout {
@@ -125,6 +149,7 @@ body {
     flex-direction: column;
     overflow: hidden;
     box-shadow: 0 4px 6px var(--shadow-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .panel-title {
@@ -135,6 +160,7 @@ body {
     color: var(--text-muted);
     border-bottom: 1px solid var(--border-color);
     letter-spacing: 1px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 /* ==============================================================================
@@ -214,6 +240,7 @@ body {
     background-color: var(--bg-hover);
     border-radius: 6px;
     border: 1px solid var(--border-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .result-box h3 {
@@ -240,6 +267,8 @@ body {
     border-radius: 4px;
     font-family: monospace;
     border: 1px solid var(--border-color);
+    color: var(--text-main);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 /* ==============================================================================
@@ -276,6 +305,7 @@ body {
     padding: 15px;
     border-radius: 8px;
     border: 1px solid var(--border-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .state-box h3 {
@@ -292,6 +322,7 @@ body {
     padding: 10px;
     font-family: monospace;
     font-size: 13px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .pseudo-line {
@@ -359,6 +390,7 @@ body {
     font-weight: bold;
     position: relative;
     transition: all 0.3s ease;
+    color: var(--text-main);
 }
 
 .vis-index {
@@ -467,6 +499,7 @@ body {
     font-size: 13px;
     font-weight: bold;
     color: var(--text-muted);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .speed-control input[type="range"] {
@@ -493,6 +526,27 @@ body {
     overflow: hidden;
 }
 
+.quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-hover);
+    border-radius: 8px 8px 0 0;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Chỉnh màu chữ tiêu đề Quiz cho dễ nhìn ở cả 2 chế độ */
+.quiz-title {
+    border: none;
+    padding: 0;
+    background: transparent;
+    color: var(--text-main);
+    /* Sẽ tự đổi màu đen/trắng tùy mode */
+    font-size: 16px;
+}
+
 .quiz-option {
     display: block;
     margin: 10px 0;
@@ -503,6 +557,7 @@ body {
     border: 1px solid var(--border-color);
     transition: all 0.2s;
     font-size: 15px;
+    color: var(--text-main);
 }
 
 .quiz-option:hover {
@@ -536,6 +591,7 @@ body {
     font-family: 'Courier New', monospace;
     font-size: 14px;
     border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .log-placeholder {
@@ -572,6 +628,7 @@ body {
 .history-section {
     padding: 15px;
     background-color: var(--bg-panel);
+    transition: background-color 0.3s ease;
 }
 
 .history-section h3 {

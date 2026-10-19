@@ -17,6 +17,12 @@
             overflow-y: auto;
         }
     </style>
+    <script>
+        // Script chống nháy màu khi tải trang (FOUC)
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark-mode');
+        }
+    </script>
   </head>
   <body>
     <header class="app-header">
@@ -24,8 +30,9 @@
         <span class="badge">DT035</span>
         <h1>Web Thuật Toán Chỉnh Hợp Không Lặp</h1>
       </div>
-      <div class="header-author">
-        Sinh viên thực hiện: <strong>Vũ Duy Khánh (N24DCDT039)</strong>
+      <div class="header-author" style="display: flex; align-items: center; gap: 15px;">
+        <span>Sinh viên thực hiện: <strong>Vũ Duy Khánh (N24DCDT039)</strong></span>
+        <button id="theme-toggle" class="theme-toggle" title="Chuyển chế độ sáng/tối">🌙 Tối</button>
       </div>
     </header>
 
@@ -269,8 +276,8 @@
     {% if da_chay and not error and trace_data and che_do == 'hoc' and not co_rang_buoc %}
     <div class="quiz-section-wrapper" id="quiz-panel">
       <div class="quiz-box panel">
-        <div class="quiz-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--border-color); background: var(--bg-hover); border-radius: 8px 8px 0 0;">
-            <h2 class="panel-title" style="color: var(--primary-color); border: none; padding: 0; background: transparent;">Khu Vực Ôn Tập Tương Tác</h2>
+        <div class="quiz-header">
+            <h2 class="panel-title quiz-title">🎯 Khu Vực Ôn Tập Tương Tác</h2>
             <button id="btn-new-quiz" class="btn-control btn-primary" style="width: auto; height: 35px; padding: 0 15px; font-size: 13px;">Tạo câu hỏi ngẫu nhiên</button>
         </div>
         <div style="padding: 20px;">
@@ -305,6 +312,34 @@
       const quizOptions = document.getElementById("quiz-options");
       const quizFeedback = document.getElementById("quiz-feedback");
       const btnNewQuiz = document.getElementById("btn-new-quiz");
+
+      // Xử lý logic Dark/Light Mode
+      const themeToggleBtn = document.getElementById("theme-toggle");
+      const htmlEl = document.documentElement;
+
+      function updateThemeButton() {
+          if (htmlEl.classList.contains('dark-mode')) {
+              themeToggleBtn.innerHTML = '☀️ Sáng';
+          } else {
+              themeToggleBtn.innerHTML = '🌙 Tối';
+          }
+      }
+      
+      // Khởi tạo trạng thái ban đầu
+      if (localStorage.getItem('theme') === 'dark') {
+          htmlEl.classList.add('dark-mode');
+      }
+      updateThemeButton();
+
+      themeToggleBtn.addEventListener('click', () => {
+          htmlEl.classList.toggle('dark-mode');
+          if (htmlEl.classList.contains('dark-mode')) {
+              localStorage.setItem('theme', 'dark');
+          } else {
+              localStorage.setItem('theme', 'light');
+          }
+          updateThemeButton();
+      });
 
       // Xử lý sự kiện nút Validation
       const current_n = {{ n if da_chay else 0 }};
@@ -393,7 +428,6 @@
               return;
           }
           
-          // Lọc ra các bước có thể đặt câu hỏi (Chọn, Quay lui, Lưu)
           const validSteps = traceData.filter(s => s.type === "SELECT" || s.type === "BACKTRACK" || s.type === "SAVE");
           
           if (validSteps.length === 0) {
@@ -401,7 +435,6 @@
               return;
           }
           
-          // Bốc ngẫu nhiên 1 bước
           const step = validSteps[Math.floor(Math.random() * validSteps.length)];
           
           quizFeedback.style.display = "none";

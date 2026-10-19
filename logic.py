@@ -1,4 +1,5 @@
 import math
+import time
 
 # ==============================================================================
 # BÀI TOÁN: LIỆT KÊ CHỈNH HỢP KHÔNG LẶP CHẬP K CỦA N PHẦN TỬ
@@ -94,7 +95,9 @@ def sinh_ke_tiep_chinh_hop(n, k):
     
     return ket_qua
 
-# --- HÀM TẠO TRACE CHO VISUALIZER (MÔ PHỎNG) ---
+# ==============================================================================
+# HÀM TẠO TRACE CHO VISUALIZER (MÔ PHỎNG)
+# ==============================================================================
 def liet_ke_chinh_hop_co_trace(n, k, max_steps=5000):
     """
     Tương tự hàm đệ quy gốc nhưng ghi lại trạng thái từng bước.
@@ -157,3 +160,71 @@ def liet_ke_chinh_hop_co_trace(n, k, max_steps=5000):
 
     thu_co_trace(1)
     return ket_qua, trace
+
+# ==============================================================================
+# MỞ RỘNG: XỬ LÝ RÀNG BUỘC VÀ ĐO HIỆU NĂNG
+# ==============================================================================
+
+def kiem_tra_rang_buoc(day, rang_buoc):
+    """Kiểm tra một dãy hoàn chỉnh có thỏa mãn ràng buộc không."""
+    if not rang_buoc: return True
+    if 'not_first' in rang_buoc and len(day) > 0 and day[0] == rang_buoc['not_first']:
+        return False
+    if 'not_adjacent' in rang_buoc:
+        a, b = rang_buoc['not_adjacent']
+        for i in range(len(day) - 1):
+            if (day[i] == a and day[i+1] == b) or (day[i] == b and day[i+1] == a):
+                return False
+    return True
+
+def liet_ke_sinh_roi_loc(n, k, rang_buoc=None):
+    """Phương pháp 1: Sinh tất cả chỉnh hợp, sau đó lọc theo ràng buộc."""
+    tat_ca = liet_ke_chinh_hop(n, k)
+    if not rang_buoc: return tat_ca
+    return [day for day in tat_ca if kiem_tra_rang_buoc(day, rang_buoc)]
+
+def liet_ke_cat_nhanh(n, k, rang_buoc=None):
+    """Phương pháp 2: Quay lui có cắt nhánh (kiểm tra ràng buộc ngay khi xây dựng)."""
+    if k < 0 or k > n: return []
+    x = [0] * (k + 1)
+    used = [False] * (n + 1)
+    ket_qua = []
+    
+    def thu(i):
+        if i > k:
+            ket_qua.append(list(x[1:]))
+            return
+        for j in range(1, n + 1):
+            if not used[j]:
+                hop_le = True
+                if rang_buoc:
+                    # Cắt nhánh sớm: Nếu vi phạm, không đi tiếp nhánh này
+                    if i == 1 and 'not_first' in rang_buoc and j == rang_buoc['not_first']:
+                        hop_le = False
+                    if i > 1 and 'not_adjacent' in rang_buoc:
+                        a, b = rang_buoc['not_adjacent']
+                        if (x[i-1] == a and j == b) or (x[i-1] == b and j == a):
+                            hop_le = False
+                if hop_le:
+                    x[i] = j
+                    used[j] = True
+                    thu(i + 1)
+                    used[j] = False
+    thu(1)
+    return ket_qua
+
+def do_hieu_qua(n, k, rang_buoc=None):
+    """Đo thời gian và so sánh 2 phương pháp."""
+    start1 = time.perf_counter()
+    kq1 = liet_ke_sinh_roi_loc(n, k, rang_buoc)
+    time1 = (time.perf_counter() - start1) * 1000
+    
+    start2 = time.perf_counter()
+    kq2 = liet_ke_cat_nhanh(n, k, rang_buoc)
+    time2 = (time.perf_counter() - start2) * 1000
+    
+    return {
+        "sinh_roi_loc": {"so_nghiem": len(kq1), "thoi_gian_ms": round(time1, 4)},
+        "cat_nhanh": {"so_nghiem": len(kq2), "thoi_gian_ms": round(time2, 4)},
+        "hop_le": kq1 == kq2
+    }

@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, jsonify, g
 import sqlite3
-from logic import so_chinh_hop, liet_ke_chinh_hop, sinh_ke_tiep_chinh_hop, liet_ke_chinh_hop_co_trace
+# Import thêm 2 hàm mới xử lý ràng buộc
+from logic import (so_chinh_hop, liet_ke_chinh_hop, sinh_ke_tiep_chinh_hop, 
+                   liet_ke_chinh_hop_co_trace, liet_ke_cat_nhanh, do_hieu_qua)
 import os
 
 app = Flask(__name__)
@@ -79,6 +81,10 @@ def index():
 
     n_str = request.form.get('n') if request.method == 'POST' else request.args.get('n')
     k_str = request.form.get('k') if request.method == 'POST' else request.args.get('k')
+    
+    # Kiểm tra checkbox ràng buộc
+    co_rang_buoc = request.form.get('co_rang_buoc') == 'on'
+    so_sanh = None
 
     if n_str is not None and k_str is not None:
         try:
@@ -95,20 +101,28 @@ def index():
                 error = "Vui lòng nhập k thỏa mãn 0 <= k <= n."
             else:
                 so_luong = so_chinh_hop(n, k)
-                full_de_quy = liet_ke_chinh_hop(n, k)
                 
+                # Xử lý logic dựa trên ràng buộc
+                if co_rang_buoc:
+                    # Ràng buộc mẫu: 1 không đứng đầu, 2 và 3 không đứng cạnh nhau
+                    rang_buoc = {'not_first': 1, 'not_adjacent': (2, 3)}
+                    full_de_quy = liet_ke_cat_nhanh(n, k, rang_buoc)
+                    so_sanh = do_hieu_qua(n, k, rang_buoc)
+                    trace_data = [] # Tạm thời ẩn mô phỏng khi có ràng buộc để tránh xung đột
+                else:
+                    full_de_quy = liet_ke_chinh_hop(n, k)
+                    if k > 0:
+                        full_sinh = sinh_ke_tiep_chinh_hop(n, k)
+                        ket_qua_sinh = full_sinh[:per_page]
+                        _, trace_data = liet_ke_chinh_hop_co_trace(n, k, max_steps=5000)
+                        if len(trace_data) >= 5000:
+                            trace_truncated = True
+                
+                # Phân trang
                 total_pages = (len(full_de_quy) + per_page - 1) // per_page
                 start_idx = (page - 1) * per_page
                 end_idx = start_idx + per_page
                 ket_qua_de_quy = full_de_quy[start_idx:end_idx]
-                
-                if k > 0:
-                    full_sinh = sinh_ke_tiep_chinh_hop(n, k)
-                    ket_qua_sinh = full_sinh[start_idx:end_idx]
-                    
-                    _, trace_data = liet_ke_chinh_hop_co_trace(n, k, max_steps=5000)
-                    if len(trace_data) >= 5000:
-                        trace_truncated = True
                 
                 if request.method == 'POST':
                     luu_lich_su(n, k, so_luong)
@@ -133,7 +147,8 @@ def index():
                            lich_su=lich_su,
                            error=error, da_chay=da_chay,
                            page=page, total_pages=total_pages,
-                           page_range=page_range)
+                           page_range=page_range,
+                           co_rang_buoc=co_rang_buoc, so_sanh=so_sanh)
 
 # ==============================================================================
 # RESTFUL API 
@@ -162,5 +177,4 @@ def api_permutations():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    # Chạy production trên Render thì nên để debug=False
     app.run(host='0.0.0.0', port=port, debug=False)

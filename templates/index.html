@@ -10,7 +10,6 @@
     />
   </head>
   <body>
-    <!-- Header -->
     <header class="app-header">
       <div class="header-title">
         <span class="badge">DT035</span>
@@ -47,6 +46,29 @@
               required
             />
           </div>
+
+          <!-- Checkbox Ràng buộc mới -->
+          <div
+            class="form-group"
+            style="flex-direction: row; align-items: center; gap: 10px"
+          >
+            <input
+              type="checkbox"
+              name="co_rang_buoc"
+              id="co_rang_buoc"
+              style="width: 18px; height: 18px"
+              {%
+              if
+              co_rang_buoc
+              %}checked{%
+              endif
+              %}
+            />
+            <label for="co_rang_buoc" style="font-size: 13px; cursor: pointer"
+              >Thêm ràng buộc (1 không đứng đầu, 2-3 không cạnh nhau)</label
+            >
+          </div>
+
           <button type="submit" class="btn-primary">Chạy Thuật Toán</button>
         </form>
 
@@ -54,21 +76,45 @@
         <div class="error-msg">Lỗi: {{ error }}</div>
         {% endif %} {% if da_chay and not error %}
         <div class="result-box mt-20">
-          <h3>Số lượng A(n,k)</h3>
+          <h3>Tổng số lượng A(n,k)</h3>
           <p class="highlight">{{ so_luong }}</p>
         </div>
+
+        <!-- Hiển thị bảng so sánh khi có ràng buộc -->
+        {% if co_rang_buoc and so_sanh %}
+        <div class="result-box mt-20">
+          <h3>So sánh hiệu quả thuật toán</h3>
+          <table class="history-table">
+            <tr>
+              <th>Phương pháp</th>
+              <th>Số nghiệm</th>
+              <th>Thời gian (ms)</th>
+            </tr>
+            <tr>
+              <td>Sinh rồi lọc</td>
+              <td>{{ so_sanh.sinh_roi_loc.so_nghiem }}</td>
+              <td>{{ so_sanh.sinh_roi_loc.thoi_gian_ms }}</td>
+            </tr>
+            <tr>
+              <td>Cắt nhánh</td>
+              <td>{{ so_sanh.cat_nhanh.so_nghiem }}</td>
+              <td>{{ so_sanh.cat_nhanh.thoi_gian_ms }}</td>
+            </tr>
+          </table>
+          <p style="font-size: 12px; margin-top: 5px; color: var(--text-muted)">
+            * Hai phương pháp trả về tập nghiệm {% if so_sanh.hop_le %} GIỐNG
+            NHAU {% else %} KHÁC NHAU (LỖI) {% endif %}.
+          </p>
+        </div>
+        {% endif %}
 
         <div class="result-box mt-20">
           <h3>Kết quả Đệ quy</h3>
 
-          <!-- PHÂN TRANG CHUẨN CÔNG NGHIỆP (CHỈ GIỮ LẠI Ở TRÊN) -->
           {% if total_pages > 1 %}
           <ul class="pagination">
             <li class="page-item {% if page == 1 %}disabled{% endif %}">
-              <a
-                class="page-link"
-                href="?page=1&n={{ n }}&k={{ k }}"
-                title="Trang đầu"
+              <a class="page-link" href="?page=1&n={{ n }}&k={{ k }}"
                 >&laquo;&laquo;</a
               >
             </li>
@@ -76,7 +122,6 @@
               <a
                 class="page-link"
                 href="?page={{ page - 1 }}&n={{ n }}&k={{ k }}"
-                title="Trang trước"
                 >&laquo;</a
               >
             </li>
@@ -99,7 +144,6 @@
               <a
                 class="page-link"
                 href="?page={{ page + 1 }}&n={{ n }}&k={{ k }}"
-                title="Trang sau"
                 >&raquo;</a
               >
             </li>
@@ -109,7 +153,6 @@
               <a
                 class="page-link"
                 href="?page={{ total_pages }}&n={{ n }}&k={{ k }}"
-                title="Trang cuối"
                 >&raquo;&raquo;</a
               >
             </li>
@@ -153,7 +196,6 @@
             </button>
           </div>
 
-          <!-- THÔNG BÁO KHI TRACE BỊ CẮT (Đã bỏ inline style) -->
           {% if trace_truncated %}
           <div class="warning-box">
             <p class="warning-title">* Lưu ý về hiệu năng mô phỏng:</p>
@@ -166,9 +208,9 @@
           </div>
           {% endif %}
         </div>
-        {% elif da_chay and not error and not trace_data %}
+        {% elif da_chay and not error and (not trace_data or co_rang_buoc) %}
         <div class="empty-state">
-          <p>Không có bước mô phỏng nào để hiển thị (trường hợp k = 0).</p>
+          <p>Mô phỏng từng bước bị tắt khi bật ràng buộc hoặc k = 0.</p>
         </div>
         {% else %}
         <div class="empty-state">

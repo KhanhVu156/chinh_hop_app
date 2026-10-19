@@ -1,8 +1,6 @@
 /* ==============================================================================
-   CẤU HÌNH BẢNG MÀU (CSS VARIABLES)
+   CẤU HÌNH BẢNG MÀU
    ============================================================================== */
-
-/* Mặc định (Light Mode) */
 :root {
     --bg-body: #f4f7f6;
     --bg-panel: #ffffff;
@@ -10,28 +8,21 @@
     --bg-hover: #f1f5f9;
     --bg-log: #f8fafc;
     --bg-box: #e2e8f0;
-
     --text-main: #1e293b;
     --text-muted: #64748b;
     --text-inverse: #ffffff;
-
     --border-color: #cbd5e1;
     --border-log: #e2e8f0;
-
     --primary-color: #3b82f6;
     --primary-hover: #2563eb;
-
     --success-color: #10b981;
     --success-hover: #059669;
-
     --warning-color: #d97706;
     --danger-color: #ef4444;
     --danger-hover: #dc2626;
-
     --shadow-color: rgba(0, 0, 0, 0.1);
 }
 
-/* Tự động chuyển sang Dark Mode nếu hệ thống thiết lập */
 @media (prefers-color-scheme: dark) {
     :root {
         --bg-body: #0f172a;
@@ -40,24 +31,18 @@
         --bg-hover: #334155;
         --bg-log: #0f172a;
         --bg-box: #334155;
-
         --text-main: #e2e8f0;
         --text-muted: #94a3b8;
         --text-inverse: #ffffff;
-
         --border-color: #334155;
         --border-log: #334155;
-
         --primary-color: #3b82f6;
         --primary-hover: #2563eb;
-
         --success-color: #10b981;
         --success-hover: #059669;
-
         --warning-color: #f59e0b;
         --danger-color: #ef4444;
         --danger-hover: #dc2626;
-
         --shadow-color: rgba(0, 0, 0, 0.5);
     }
 }
@@ -80,11 +65,10 @@ body {
     flex-direction: column;
     overflow: hidden;
     transition: background-color 0.3s ease, color 0.3s ease;
-    /* Hiệu ứng chuyển màu mượt */
 }
 
 /* ==============================================================================
-   HEADER
+   HEADER & LAYOUT
    ============================================================================== */
 .app-header {
     background-color: var(--bg-panel);
@@ -103,7 +87,6 @@ body {
 
 .header-title h1 {
     font-size: 20px;
-    color: var(--text-main);
 }
 
 .badge {
@@ -112,7 +95,6 @@ body {
     padding: 4px 10px;
     border-radius: 4px;
     font-weight: bold;
-    font-size: 14px;
 }
 
 .header-author {
@@ -124,12 +106,9 @@ body {
     color: var(--primary-color);
 }
 
-/* ==============================================================================
-   LAYOUT (3 CỘT)
-   ============================================================================== */
 .main-layout {
     display: grid;
-    grid-template-columns: 320px 1fr 350px;
+    grid-template-columns: 350px 1fr 350px;
     gap: 15px;
     padding: 15px;
     flex: 1;
@@ -157,7 +136,7 @@ body {
 }
 
 /* ==============================================================================
-   CỘT TRÁI: FORM & KẾT QUẢ
+   CONFIG & RESULT
    ============================================================================== */
 .config-panel {
     padding: 15px;
@@ -178,11 +157,10 @@ body {
 
 .form-group label {
     font-size: 14px;
-    color: var(--text-main);
     font-weight: 500;
 }
 
-.form-group input {
+.form-group input[type="number"] {
     padding: 10px;
     border-radius: 6px;
     border: 1px solid var(--border-color);
@@ -190,11 +168,22 @@ body {
     color: var(--text-main);
     font-size: 16px;
     outline: none;
-    transition: border-color 0.2s;
 }
 
-.form-group input:focus {
+.form-group input[type="number"]:focus {
     border-color: var(--primary-color);
+}
+
+.checkbox-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.checkbox-group input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
 }
 
 .btn-primary {
@@ -207,7 +196,6 @@ body {
     font-weight: bold;
     font-size: 16px;
     margin-top: 10px;
-    transition: background-color 0.2s;
 }
 
 .btn-primary:hover {
@@ -219,9 +207,7 @@ body {
     padding: 10px;
     background-color: rgba(239, 68, 68, 0.1);
     color: var(--danger-color);
-    border: 1px solid var(--danger-color);
     border-radius: 6px;
-    font-size: 14px;
 }
 
 .result-box {
@@ -252,7 +238,6 @@ body {
 
 .array-item {
     background-color: var(--bg-box);
-    color: var(--text-main);
     padding: 4px 8px;
     border-radius: 4px;
     font-family: monospace;
@@ -260,7 +245,7 @@ body {
 }
 
 /* ==============================================================================
-   CỘT GIỮA: VISUALIZER
+   VISUALIZER
    ============================================================================== */
 .visual-panel {
     padding: 20px;
@@ -308,7 +293,6 @@ body {
     font-style: italic;
 }
 
-/* Mảng mô phỏng */
 .array-visual {
     display: flex;
     gap: 10px;
@@ -325,7 +309,6 @@ body {
     border-radius: 8px;
     font-size: 20px;
     font-weight: bold;
-    color: var(--text-main);
     position: relative;
     transition: all 0.3s ease;
 }
@@ -337,7 +320,6 @@ body {
     color: var(--text-muted);
 }
 
-/* Trạng thái Active (Đang chọn) */
 .box-active {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
@@ -345,14 +327,12 @@ body {
     box-shadow: 0 0 10px var(--primary-color);
 }
 
-/* Trạng thái Used (Đã đánh dấu) */
 .box-used-true {
     background-color: var(--success-color);
     border-color: var(--success-color);
     color: var(--text-inverse);
 }
 
-/* Điều khiển */
 .controls {
     display: flex;
     gap: 15px;
@@ -363,12 +343,10 @@ body {
 .btn-control {
     padding: 12px 24px;
     background-color: var(--bg-hover);
-    color: var(--text-main);
     border: 1px solid var(--border-color);
     border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
-    transition: background-color 0.2s;
 }
 
 .btn-control:hover {
@@ -391,7 +369,7 @@ body {
 }
 
 /* ==============================================================================
-   CỘT PHẢI: NHẬT KÝ (LOG) & LỊCH SỬ
+   LOG & HISTORY
    ============================================================================== */
 .log-panel {
     padding: 0;
@@ -404,7 +382,7 @@ body {
     padding: 15px;
     overflow-y: auto;
     background-color: var(--bg-log);
-    font-family: 'Courier New', Courier, monospace;
+    font-family: 'Courier New', monospace;
     font-size: 14px;
     border-bottom: 1px solid var(--border-color);
 }
@@ -418,7 +396,6 @@ body {
     margin-bottom: 8px;
     padding-left: 10px;
     border-left: 3px solid transparent;
-    color: var(--text-main);
 }
 
 .log-normal {
@@ -441,7 +418,6 @@ body {
     font-weight: bold;
 }
 
-/* Bảng lịch sử */
 .history-section {
     padding: 15px;
     background-color: var(--bg-panel);
@@ -469,45 +445,19 @@ body {
 .history-table td {
     padding: 8px 5px;
     border-bottom: 1px solid var(--border-color);
-    color: var(--text-main);
 }
 
 /* ==============================================================================
-   SCROLLBAR
-   ============================================================================== */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: var(--bg-body);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--text-muted);
-}
-
-/* ==============================================================================
-   PHÂN TRANG CHUẨN CÔNG NGHIỆP (PAGINATION)
+   PAGINATION & SCROLLBAR
    ============================================================================== */
 .pagination {
     display: flex;
     justify-content: center;
-    align-items: center;
     list-style: none;
     padding: 0;
     margin: 15px 0;
     gap: 4px;
     flex-wrap: wrap;
-}
-
-.page-item {
-    display: inline-block;
 }
 
 .page-link {
@@ -520,7 +470,6 @@ body {
     border-radius: 4px;
     text-decoration: none;
     transition: all 0.2s ease;
-    line-height: 1.5;
 }
 
 .page-link:hover {
@@ -540,37 +489,27 @@ body {
 .page-item.disabled .page-link {
     color: var(--text-muted);
     background-color: var(--bg-body);
-    border-color: var(--border-color);
-    pointer-events: none;
-    cursor: not-allowed;
     opacity: 0.6;
+    pointer-events: none;
 }
 
-.mt-10 {
-    margin-top: 10px;
+.mt-20 {
+    margin-top: 20px;
 }
 
-/* ==============================================================================
-   HỘP CẢNH BÁO (WARNING BOX) - Đã tối ưu cho cả Light và Dark Mode
-   ============================================================================== */
-.warning-box {
-    margin-top: 15px;
-    padding: 15px;
-    /* Sử dụng màu vàng cam trong suốt (alpha 0.1) để tương thích với cả nền sáng và tối */
-    background-color: rgba(245, 158, 11, 0.1);
-    border: 1px dashed var(--warning-color);
-    border-radius: 8px;
+::-webkit-scrollbar {
+    width: 8px;
 }
 
-.warning-title {
-    color: var(--warning-color);
-    font-weight: bold;
-    font-size: 14px;
-    margin-bottom: 5px;
+::-webkit-scrollbar-track {
+    background: var(--bg-body);
 }
 
-.warning-desc {
-    color: var(--text-main);
-    font-size: 13px;
-    line-height: 1.5;
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
 }

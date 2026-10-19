@@ -246,10 +246,8 @@ body {
 .visual-panel {
     padding: 20px;
     overflow-y: auto;
-    /* QUAN TRỌNG: Thêm thanh cuộn để không bị che nút */
 }
 
-/* Tùy chỉnh thanh cuộn cho đẹp */
 .visual-panel::-webkit-scrollbar {
     width: 6px;
 }
@@ -263,7 +261,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    /* Khoảng cách giữa các khối */
 }
 
 .visualizer-display {
@@ -385,22 +382,40 @@ body {
 /* ==============================================================================
    ĐIỀU KHIỂN (CONTROLS) & QUIZ
    ============================================================================== */
-.controls {
+.controls-area {
     display: flex;
-    gap: 10px;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+    padding-bottom: 15px;
+}
+
+.button-group {
+    display: flex;
+    gap: 15px;
     justify-content: center;
-    margin-top: 10px;
     flex-wrap: wrap;
 }
 
 .btn-control {
-    padding: 10px 15px;
+    width: 130px;
+    /* Cố định chiều rộng để bằng nhau */
+    height: 40px;
+    /* Cố định chiều cao */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background-color: var(--bg-hover);
     border: 1px solid var(--border-color);
     border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
     color: var(--text-main);
+    font-size: 14px;
+    padding: 0;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
 }
 
 .btn-control:hover {
@@ -410,6 +425,16 @@ body {
 .btn-control:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--text-inverse);
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
 }
 
 .btn-danger {
@@ -425,12 +450,13 @@ body {
 .speed-control {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     background: var(--bg-hover);
-    padding: 5px 15px;
+    padding: 8px 20px;
     border-radius: 6px;
     border: 1px solid var(--border-color);
     font-size: 14px;
+    font-weight: bold;
 }
 
 /* Quiz Box */

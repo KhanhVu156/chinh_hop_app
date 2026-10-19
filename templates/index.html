@@ -182,19 +182,23 @@
 
           <!-- QUIZ -->
           <div class="quiz-box" id="quiz-panel" style="display: none">
-            <h3 style="color: var(--primary-color); margin-bottom: 10px">🎯 Luyện tập tương tác</h3>
+            <h3 style="color: var(--primary-color); margin-bottom: 10px">Luyện tập tương tác</h3>
             <p id="quiz-question">Đang tải...</p>
             <div id="quiz-options"></div>
             <p class="quiz-feedback" id="quiz-feedback"></p>
           </div>
 
           <!-- CONTROLS -->
-          <div class="controls">
-            <button id="btn-back" class="btn-control" disabled>Bước trước</button>
-            <button id="btn-play" class="btn-control btn-primary">Tự động chạy</button>
-            <button id="btn-skip" class="btn-control">Đến cuối (Skip)</button>
-            <button id="btn-step" class="btn-control">Bước tiếp</button>
-            <button id="btn-reset" class="btn-control btn-danger">Reset</button>
+          <div class="controls-area">
+            <div class="button-group">
+              <button id="btn-back" class="btn-control" disabled>Bước trước</button>
+              <button id="btn-step" class="btn-control">Bước tiếp</button>
+            </div>
+            <div class="button-group">
+              <button id="btn-play" class="btn-control btn-primary">Tự động chạy</button>
+              <button id="btn-skip" class="btn-control">Đến cuối (Skip)</button>
+              <button id="btn-reset" class="btn-control btn-danger">Reset</button>
+            </div>
             <div class="speed-control">
               <label>Tốc độ:</label>
               <input type="range" id="speed" min="100" max="2000" value="800" step="100" />
@@ -308,7 +312,6 @@
       function generateQuiz(step) {
           if (!step) return;
           
-          // SỬA LỖI: Nếu không phải là bước quan trọng, ẩn Quiz đi
           if (step.type !== "SELECT" && step.type !== "BACKTRACK" && step.type !== "SAVE") {
               quizPanel.style.display = "none";
               return;

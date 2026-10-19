@@ -97,13 +97,16 @@ def sinh_ke_tiep_chinh_hop(n, k):
 # ==============================================================================
 # HÀM TẠO TRACE CHO VISUALIZER (MÔ PHỎNG)
 # ==============================================================================
-def liet_ke_chinh_hop_co_trace(n, k, max_steps=1000): # TỐI ƯU: Giảm max_steps xuống 1000 để nhẹ JSON, tránh treo trình duyệt
+class StopTrace(Exception):
+    """Exception dùng để ngắt toàn bộ đệ quy ngay lập tức khi đủ số bước."""
+    pass
+
+def liet_ke_chinh_hop_co_trace(n, k, max_steps=1000): 
     """Tạo trace mô phỏng từng bước của thuật toán đệ quy."""
     if k < 0 or k > n: return [], []
     
     x = [0] * (k + 1)
     used = [False] * (n + 1)
-    ket_qua = []
     trace = []
     call_stack = []
 
@@ -117,13 +120,15 @@ def liet_ke_chinh_hop_co_trace(n, k, max_steps=1000): # TỐI ƯU: Giảm max_st
                 "pseudo_line": pseudo_line,
                 "message": message
             })
+            # Ngắt ngay lập tức khi đủ số bước yêu cầu
+            if len(trace) >= max_steps:
+                raise StopTrace()
 
     def thu_co_trace(i):
         call_stack.append(i)
         add_trace("CALL", f"Gọi đệ quy thu({i})", 1)
 
         if i > k:
-            ket_qua.append(list(x[1:]))
             add_trace("SAVE", f"Đã điền đủ {k} vị trí. Lưu kết quả: {x[1:]}", 2)
             call_stack.pop()
             return
@@ -143,8 +148,12 @@ def liet_ke_chinh_hop_co_trace(n, k, max_steps=1000): # TỐI ƯU: Giảm max_st
                 add_trace("SKIP", f"Bỏ qua j = {j} vì used[{j}] đang True", 5)
         call_stack.pop()
 
-    thu_co_trace(1)
-    return ket_qua, trace
+    try:
+        thu_co_trace(1)
+    except StopTrace:
+        pass # Kết thúc êm đẹp
+
+    return [], trace 
 
 # ==============================================================================
 # MỞ RỘNG: XỬ LÝ RÀNG BUỘC VÀ ĐO HIỆU NĂNG

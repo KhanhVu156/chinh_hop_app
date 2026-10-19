@@ -395,14 +395,16 @@ body {
     display: flex;
     gap: 15px;
     justify-content: center;
+    align-items: center;
+    /* Căn giữa hoàn hảo */
     flex-wrap: wrap;
 }
 
 .btn-control {
-    width: 130px;
-    /* Cố định chiều rộng để bằng nhau */
-    height: 40px;
-    /* Cố định chiều cao */
+    width: 145px;
+    /* Tăng chiều rộng để chứa chữ dài */
+    height: 42px;
+    /* Tăng chiều cao cho cân đối */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -413,9 +415,15 @@ body {
     font-weight: bold;
     color: var(--text-main);
     font-size: 14px;
-    padding: 0;
+    padding: 0 10px;
     box-sizing: border-box;
     transition: all 0.2s ease;
+    white-space: nowrap;
+    /* Không cho chữ rớt dòng */
+    flex-shrink: 0;
+    /* Không cho nút bị bóp méo */
+    line-height: 1;
+    /* Chống lún chữ */
 }
 
 .btn-control:hover {

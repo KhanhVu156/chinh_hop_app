@@ -266,16 +266,21 @@
     </div>
 
     <!-- KHU VỰC LUYỆN TẬP TƯƠNG TÁC (TÁCH RIÊNG BÊN DƯỚI) -->
-    <div class="quiz-section-wrapper" id="quiz-panel" style="display: none;">
+    {% if da_chay and not error and trace_data and che_do == 'hoc' and not co_rang_buoc %}
+    <div class="quiz-section-wrapper" id="quiz-panel">
       <div class="quiz-box panel">
-        <h2 class="panel-title" style="color: var(--primary-color); border-bottom: none;">🎯 Luyện Tập Tương Tác</h2>
+        <div class="quiz-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--border-color); background: var(--bg-hover); border-radius: 8px 8px 0 0;">
+            <h2 class="panel-title" style="color: var(--primary-color); border: none; padding: 0; background: transparent;">Khu Vực Ôn Tập Tương Tác</h2>
+            <button id="btn-new-quiz" class="btn-control btn-primary" style="width: auto; height: 35px; padding: 0 15px; font-size: 13px;">Tạo câu hỏi ngẫu nhiên</button>
+        </div>
         <div style="padding: 20px;">
-            <p id="quiz-question" style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">Đang tải...</p>
+            <p id="quiz-question" style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">Nhấn "Tạo câu hỏi ngẫu nhiên" để bắt đầu ôn tập kiến thức.</p>
             <div id="quiz-options"></div>
             <p class="quiz-feedback" id="quiz-feedback"></p>
         </div>
       </div>
     </div>
+    {% endif %}
 
     <script>
       const traceData = {{ trace_data | tojson | safe }};
@@ -296,10 +301,10 @@
       const logContainer = document.getElementById("log-container");
       const pseudoLines = document.querySelectorAll(".pseudo-line");
 
-      const quizPanel = document.getElementById("quiz-panel");
       const quizQuestion = document.getElementById("quiz-question");
       const quizOptions = document.getElementById("quiz-options");
       const quizFeedback = document.getElementById("quiz-feedback");
+      const btnNewQuiz = document.getElementById("btn-new-quiz");
 
       // Xử lý sự kiện nút Validation
       const current_n = {{ n if da_chay else 0 }};
@@ -381,30 +386,36 @@
           });
       }
 
-      function generateQuiz(step) {
-          if (!step) return;
-          
-          if (step.type !== "SELECT" && step.type !== "BACKTRACK" && step.type !== "SAVE") {
-              quizPanel.style.display = "none";
+      // --- LOGIC QUIZ ĐỘC LẬP ---
+      function generateRandomQuiz() {
+          if (!traceData || traceData.length === 0) {
+              quizQuestion.innerText = "Không có dữ liệu mô phỏng để tạo câu hỏi.";
               return;
           }
-
-          quizPanel.style.display = "block";
-          // Tự động cuộn xuống khung Quiz khi nó xuất hiện
-          quizPanel.scrollIntoView({ behavior: "smooth", block: "end" });
+          
+          // Lọc ra các bước có thể đặt câu hỏi (Chọn, Quay lui, Lưu)
+          const validSteps = traceData.filter(s => s.type === "SELECT" || s.type === "BACKTRACK" || s.type === "SAVE");
+          
+          if (validSteps.length === 0) {
+              quizQuestion.innerText = "Không tìm thấy bước quan trọng nào để đặt câu hỏi.";
+              return;
+          }
+          
+          // Bốc ngẫu nhiên 1 bước
+          const step = validSteps[Math.floor(Math.random() * validSteps.length)];
           
           quizFeedback.style.display = "none";
           quizOptions.innerHTML = "";
 
           if (step.type === "SELECT") {
-              quizQuestion.innerText = `Tại vị trí ${step.stack.length}, phần tử ${step.x[step.stack.length-1]} vừa được chọn. Bước tiếp theo là gì?`;
+              quizQuestion.innerText = `[Trích xuất từ bước ${traceData.indexOf(step) + 1}] Tại vị trí ${step.stack.length}, phần tử ${step.x[step.stack.length-1]} vừa được chọn. Bước tiếp theo của thuật toán là gì?`;
               createOptions(["Gọi đệ quy tiếp", "Lưu kết quả", "Quay lui"], "Gọi đệ quy tiếp", "Đúng rồi! Thuật toán sẽ gọi thu(i+1).");
           } else if (step.type === "BACKTRACK") {
-              quizQuestion.innerText = `Hành động quay lui đang diễn ra. Điều gì xảy ra với mảng used?`;
-              createOptions(["Đánh dấu True", "Bỏ đánh dấu False", "Không đổi"], "Bỏ đánh dấu False", "Đúng rồi! Phải bỏ đánh dấu để nhánh khác dùng lại.");
+              quizQuestion.innerText = `[Trích xuất từ bước ${traceData.indexOf(step) + 1}] Hành động quay lui đang diễn ra. Điều gì xảy ra với mảng used?`;
+              createOptions(["Đánh dấu True", "Bỏ đánh dấu False", "Không đổi"], "Bỏ đánh dấu False", "Đúng rồi! Phải bỏ đánh dấu để nhánh khác dùng lại phần tử này.");
           } else if (step.type === "SAVE") {
-              quizQuestion.innerText = `Đã tìm thấy nghiệm! Chương trình sẽ làm gì?`;
-              createOptions(["Dừng chương trình", "Quay lui tìm nghiệm mới", "Xóa mảng x"], "Quay lui tìm nghiệm mới", "Đúng rồi! Thuật toán quay lui để thử nhánh khác.");
+              quizQuestion.innerText = `[Trích xuất từ bước ${traceData.indexOf(step) + 1}] Đã tìm thấy một nghiệm đầy đủ! Chương trình sẽ làm gì tiếp theo?`;
+              createOptions(["Dừng chương trình", "Quay lui tìm nghiệm mới", "Xóa mảng x"], "Quay lui tìm nghiệm mới", "Đúng rồi! Thuật toán sẽ quay lui để thử các nhánh khác.");
           }
       }
 
@@ -418,13 +429,17 @@
                       quizFeedback.innerText = "✅ " + feedback;
                       quizFeedback.style.color = "var(--success-color)";
                   } else {
-                      quizFeedback.innerText = "❌ Sai rồi. Hãy xem lại bước hiện tại!";
+                      quizFeedback.innerText = "❌ Sai rồi. Hãy xem lại lý thuyết thuật toán!";
                       quizFeedback.style.color = "var(--danger-color)";
                   }
                   quizFeedback.style.display = "block";
               };
               quizOptions.appendChild(div);
           });
+      }
+
+      if (btnNewQuiz) {
+          btnNewQuiz.addEventListener("click", generateRandomQuiz);
       }
 
       function updateUI() {
@@ -435,7 +450,6 @@
               renderArray(visUsed, step.used, true);
               renderStack(step.stack);
               highlightPseudo(step.pseudo_line);
-              generateQuiz(step);
 
               if (btnBack.disabled) {
                   let type = step.type === "SELECT" ? "success" : step.type === "BACKTRACK" ? "warning" : step.type === "SAVE" ? "highlight" : "normal";
@@ -485,10 +499,8 @@
               pauseAuto(); currentStep = -1; btnStep.disabled = false; btnStep.innerText = "Bước tiếp";
               visAction.innerText = "Nhấn 'Tự động chạy'";
               visX.innerHTML = ""; visUsed.innerHTML = ""; visStack.innerHTML = "";
-              quizPanel.style.display = "none";
               logContainer.innerHTML = '<p class="log-placeholder">Đã reset.</p>';
               highlightPseudo(0);
-              window.scrollTo({ top: 0, behavior: 'smooth' }); // Cuộn lên đầu khi reset
           });
           speedRange.addEventListener("input", () => {
               if (playInterval) { 

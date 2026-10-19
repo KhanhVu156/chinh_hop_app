@@ -115,7 +115,6 @@ body {
     height: calc(100vh - 70px);
     /* Trừ đi chiều cao header */
     min-height: 600px;
-    /* Đảm bảo không bị bóp méo trên màn hình nhỏ */
 }
 
 .panel {
@@ -479,9 +478,9 @@ body {
    KHU VỰC LUYỆN TẬP TƯƠNG TÁC (TÁCH RIÊNG BÊN DƯỚI)
    ============================================================================== */
 .quiz-section-wrapper {
-    padding: 0 15px 30px 15px;
+    padding: 0 15px 40px 15px;
     width: 100%;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -489,28 +488,18 @@ body {
     width: 100%;
     border: 2px solid var(--primary-color);
     box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
-    animation: slideUp 0.4s ease-out;
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    background-color: var(--bg-panel);
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .quiz-option {
     display: block;
-    margin: 8px 0;
+    margin: 10px 0;
     cursor: pointer;
     padding: 12px 15px;
     border-radius: 6px;
-    background: var(--bg-panel);
+    background: var(--bg-body);
     border: 1px solid var(--border-color);
     transition: all 0.2s;
     font-size: 15px;
@@ -519,6 +508,7 @@ body {
 .quiz-option:hover {
     background: var(--bg-hover);
     border-color: var(--primary-color);
+    transform: translateX(5px);
 }
 
 .quiz-feedback {

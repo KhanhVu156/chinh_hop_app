@@ -4,10 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Web Thuật Toán Chỉnh Hợp Không Lặp</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='style.css') }}"
-    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
   </head>
   <body>
     <header class="app-header">
@@ -27,78 +24,25 @@
         <form method="POST" class="input-form">
           <div class="form-group">
             <label>Nhập n (0 ≤ n ≤ 8):</label>
-            <input
-              type="number"
-              name="n"
-              value="{{ n if da_chay else '' }}"
-              min="0"
-              max="8"
-              required
-            />
+            <input type="number" name="n" value="{{ n if da_chay else '' }}" min="0" max="8" required />
           </div>
           <div class="form-group">
             <label>Nhập k (0 ≤ k ≤ n):</label>
-            <input
-              type="number"
-              name="k"
-              value="{{ k if da_chay else '' }}"
-              min="0"
-              required
-            />
+            <input type="number" name="k" value="{{ k if da_chay else '' }}" min="0" required />
           </div>
 
           <div class="form-group">
             <label>Chế độ hiển thị:</label>
-            <select
-              name="che_do"
-              style="
-                padding: 10px;
-                border-radius: 6px;
-                border: 1px solid var(--border-color);
-                background: var(--bg-input);
-                color: var(--text-main);
-              "
-            >
-              <option value="hoc" {% if che_do="" ="hoc" %}selected{% endif %}>
-                Học từng bước
-              </option>
-              <option
-                value="liet_ke"
-                {%
-                if
-                che_do=""
-                ="liet_ke"
-                %}selected{%
-                endif
-                %}
-              >
-                Chỉ liệt kê
-              </option>
-              <option value="dem" {% if che_do="" ="dem" %}selected{% endif %}>
-                Chỉ đếm số lượng
-              </option>
+            <select name="che_do" style="padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main);">
+                <option value="hoc" {% if che_do == 'hoc' %}selected{% endif %}>Học từng bước</option>
+                <option value="liet_ke" {% if che_do == 'liet_ke' %}selected{% endif %}>Chỉ liệt kê</option>
+                <option value="dem" {% if che_do == 'dem' %}selected{% endif %}>Chỉ đếm số lượng</option>
             </select>
           </div>
 
-          <div
-            class="form-group"
-            style="flex-direction: row; align-items: center; gap: 10px"
-          >
-            <input
-              type="checkbox"
-              name="co_rang_buoc"
-              id="co_rang_buoc"
-              style="width: 18px; height: 18px"
-              {%
-              if
-              co_rang_buoc
-              %}checked{%
-              endif
-              %}
-            />
-            <label for="co_rang_buoc" style="font-size: 13px; cursor: pointer"
-              >Thêm ràng buộc (A không đầu, B-C không cạnh)</label
-            >
+          <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px">
+            <input type="checkbox" name="co_rang_buoc" id="co_rang_buoc" style="width: 18px; height: 18px" {% if co_rang_buoc %}checked{% endif %} />
+            <label for="co_rang_buoc" style="font-size: 13px; cursor: pointer">Thêm ràng buộc (A không đầu, B-C không cạnh)</label>
           </div>
 
           <button type="submit" class="btn-primary">Chạy Thuật Toán</button>
@@ -106,7 +50,9 @@
 
         {% if error %}
         <div class="error-msg">Lỗi: {{ error }}</div>
-        {% endif %} {% if da_chay and not error %}
+        {% endif %} 
+        
+        {% if da_chay and not error %}
         <div class="result-box mt-20">
           <h3>Tổng số lượng A(n,k)</h3>
           <p class="highlight">{{ so_luong }}</p>
@@ -136,55 +82,33 @@
             </tr>
           </table>
         </div>
-        {% endif %} {% if che_do != 'dem' %}
+        {% endif %} 
+        
+        {% if che_do != 'dem' %}
         <div class="result-box mt-20">
           <h3>Kết quả liệt kê</h3>
           {% if total_pages > 1 %}
           <ul class="pagination">
             <li class="page-item {% if page == 1 %}disabled{% endif %}">
-              <a
-                class="page-link"
-                href="?page=1&n={{ n }}&k={{ k }}&che_do={{ che_do }}&co_rang_buoc={{ '1' if co_rang_buoc else '0' }}"
-                >&laquo;&laquo;</a
-              >
+              <a class="page-link" href="?page=1&n={{ n }}&k={{ k }}&che_do={{ che_do }}&co_rang_buoc={{ '1' if co_rang_buoc else '0' }}">&laquo;&laquo;</a>
             </li>
             <li class="page-item {% if page == 1 %}disabled{% endif %}">
-              <a
-                class="page-link"
-                href="?page={{ page - 1 }}&n={{ n }}&k={{ k }}&che_do={{ che_do }}&co_rang_buoc={{ '1' if co_rang_buoc else '0' }}"
-                >&laquo;</a
-              >
+              <a class="page-link" href="?page={{ page - 1 }}&n={{ n }}&k={{ k }}&che_do={{ che_do }}&co_rang_buoc={{ '1' if co_rang_buoc else '0' }}">&laquo;</a>
             </li>
-            {% for p in page_range %} {% if p == '...' %}
-            <li class="page-item disabled">
-              <span class="page-link">...</span>
+            {% for p in page_range %} 
+              {% if p == '...' %}
+              <li class="page-item disabled"><span class="page-link">...</span></li>
+              {% else %}
+              <li class="page-item {% if p == page %}active{% endif %}">
+                <a class="page-link" href="?page={{ p }}&n={{ n }}&k={{ k }}&che_do={{ che_do }}&co_rang_buoc={{ '1' if co_rang_buoc else '0' }}">{{ p }}</a>
+              </li>
+              {% endif %} 
+            {% endfor %}
+            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+              <a class="page-link" href="?page={{ page + 1 }}&n={{ n }}&k={{ k }}&che_do={{ che_do }}&co_rang_buoc={{ '1' if co_rang_buoc else '0' }}">&raquo;</a>
             </li>
-            {% else %}
-            <li class="page-item {% if p == page %}active{% endif %}">
-              <a
-                class="page-link"
-                href="?page={{ p }}&n={{ n }}&k={{ k }}&che_do={{ che_do }}&co_rang_buoc={{ '1' if co_rang_buoc else '0' }}"
-                >{{ p }}</a
-              >
-            </li>
-            {% endif %} {% endfor %}
-            <li
-              class="page-item {% if page == total_pages %}disabled{% endif %}"
-            >
-              <a
-                class="page-link"
-                href="?page={{ page + 1 }}&n={{ n }}&k={{ k }}&che_do={{ che_do }}&co_rang_buoc={{ '1' if co_rang_buoc else '0' }}"
-                >&raquo;</a
-              >
-            </li>
-            <li
-              class="page-item {% if page == total_pages %}disabled{% endif %}"
-            >
-              <a
-                class="page-link"
-                href="?page={{ total_pages }}&n={{ n }}&k={{ k }}&che_do={{ che_do }}&co_rang_buoc={{ '1' if co_rang_buoc else '0' }}"
-                >&raquo;&raquo;</a
-              >
+            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+              <a class="page-link" href="?page={{ total_pages }}&n={{ n }}&k={{ k }}&che_do={{ che_do }}&co_rang_buoc={{ '1' if co_rang_buoc else '0' }}">&raquo;&raquo;</a>
             </li>
           </ul>
           {% endif %}
@@ -194,15 +118,15 @@
             {% endfor %}
           </div>
         </div>
-        {% endif %} {% endif %}
+        {% endif %} 
+        {% endif %}
       </aside>
 
       <!-- CỘT GIỮA -->
       <main class="panel visual-panel">
         <h2 class="panel-title">MÔ PHỎNG & LUYỆN TẬP</h2>
 
-        {% if da_chay and not error and trace_data and che_do == 'hoc' and not
-        co_rang_buoc %}
+        {% if da_chay and not error and trace_data and che_do == 'hoc' and not co_rang_buoc %}
         <div class="visualizer-container">
           <div class="visualizer-display" style="display: flex; gap: 20px">
             <!-- Mã giả & Stack -->
@@ -211,30 +135,13 @@
                 <h3>Mã giả</h3>
                 <div class="pseudo-code" id="pseudo-code">
                   <div class="pseudo-line" data-line="1">1. Hàm thu(i):</div>
-                  <div class="pseudo-line" data-line="2">
-                    2. &nbsp;&nbsp;Nếu i > k: Lưu kết quả, Return
-                  </div>
-                  <div class="pseudo-line" data-line="3">
-                    3. &nbsp;&nbsp;Vòng lặp j từ 1 đến n:
-                  </div>
-                  <div class="pseudo-line" data-line="4">
-                    4. &nbsp;&nbsp;&nbsp;&nbsp;Nếu used[j] == False:
-                  </div>
-                  <div class="pseudo-line" data-line="5">
-                    5. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Bỏ qua nếu used[j]
-                    == True)
-                  </div>
-                  <div class="pseudo-line" data-line="6">
-                    6. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x[i] = j, used[j] =
-                    True
-                  </div>
-                  <div class="pseudo-line" data-line="7">
-                    7. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;thu(i + 1)
-                  </div>
-                  <div class="pseudo-line" data-line="8">
-                    8. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;used[j] = False (Quay
-                    lui)
-                  </div>
+                  <div class="pseudo-line" data-line="2">2. &nbsp;&nbsp;Nếu i > k: Lưu kết quả, Return</div>
+                  <div class="pseudo-line" data-line="3">3. &nbsp;&nbsp;Vòng lặp j từ 1 đến n:</div>
+                  <div class="pseudo-line" data-line="4">4. &nbsp;&nbsp;&nbsp;&nbsp;Nếu used[j] == False:</div>
+                  <div class="pseudo-line" data-line="5">5. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Bỏ qua nếu used[j] == True)</div>
+                  <div class="pseudo-line" data-line="6">6. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x[i] = j, used[j] = True</div>
+                  <div class="pseudo-line" data-line="7">7. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;thu(i + 1)</div>
+                  <div class="pseudo-line" data-line="8">8. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;used[j] = False (Quay lui)</div>
                 </div>
               </div>
               <div class="state-box mt-20">
@@ -262,9 +169,7 @@
 
           <!-- QUIZ -->
           <div class="quiz-box" id="quiz-panel" style="display: none">
-            <h3 style="color: var(--primary-color); margin-bottom: 10px">
-              🎯 Luyện tập tương tác
-            </h3>
+            <h3 style="color: var(--primary-color); margin-bottom: 10px">🎯 Luyện tập tương tác</h3>
             <p id="quiz-question">Đang tải...</p>
             <div id="quiz-options"></div>
             <p class="quiz-feedback" id="quiz-feedback"></p>
@@ -272,24 +177,13 @@
 
           <!-- CONTROLS -->
           <div class="controls">
-            <button id="btn-back" class="btn-control" disabled>
-              Bước trước
-            </button>
-            <button id="btn-play" class="btn-control btn-primary">
-              Tự động chạy
-            </button>
+            <button id="btn-back" class="btn-control" disabled>Bước trước</button>
+            <button id="btn-play" class="btn-control btn-primary">Tự động chạy</button>
             <button id="btn-step" class="btn-control">Bước tiếp</button>
             <button id="btn-reset" class="btn-control btn-danger">Reset</button>
             <div class="speed-control">
               <label>Tốc độ:</label>
-              <input
-                type="range"
-                id="speed"
-                min="100"
-                max="2000"
-                value="800"
-                step="100"
-              />
+              <input type="range" id="speed" min="100" max="2000" value="800" step="100" />
             </div>
           </div>
         </div>
@@ -328,11 +222,7 @@
               <td>{{ row['so_luong'] }}</td>
               <td>{{ 'Có' if row['co_rang_buoc'] else 'Không' }}</td>
               <td>
-                <a
-                  href="?n={{ row['n'] }}&k={{ row['k'] }}&che_do={{ row['che_do'] }}&co_rang_buoc={{ row['co_rang_buoc'] }}"
-                  style="color: var(--primary-color)"
-                  >Chạy lại</a
-                >
+                <a href="?n={{ row['n'] }}&k={{ row['k'] }}&che_do={{ row['che_do'] }}&co_rang_buoc={{ row['co_rang_buoc'] }}" style="color: var(--primary-color)">Chạy lại</a>
               </td>
             </tr>
             {% endfor %}

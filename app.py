@@ -119,13 +119,20 @@ def index():
                     chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                     full_de_quy = [[chars[v-1] for v in day] for day in full_de_quy]
                 else:
-                    full_de_quy = liet_ke_chinh_hop(n, k)
-                    if k > 0 and che_do == 'hoc':
-                        full_sinh = sinh_ke_tiep_chinh_hop(n, k)
-                        ket_qua_sinh = full_sinh[:per_page]
-                        _, trace_data = liet_ke_chinh_hop_co_trace(n, k, max_steps=5000)
-                        if len(trace_data) >= 5000:
+                    # TỐI ƯU HÓA: Phân luồng xử lý thông minh, không sinh mảng thừa
+                    if che_do == 'dem':
+                        # Chế độ đếm: Trả về ngay, không sinh mảng
+                        full_de_quy = []
+                    elif che_do == 'hoc':
+                        # Chế độ học từng bước: CHỈ sinh trace, KHÔNG sinh toàn bộ mảng kết quả để tránh treo web
+                        _, trace_data = liet_ke_chinh_hop_co_trace(n, k, max_steps=1000)
+                        full_de_quy = []
+                        # Bật cờ thông báo nếu số bước vượt quá 1000
+                        if len(trace_data) >= 1000:
                             trace_truncated = True
+                    else: # che_do == 'liet_ke'
+                        # Chế độ liệt kê: Dùng hàm sinh kế tiếp (nhẹ hơn đệ quy) để lấy kết quả
+                        full_de_quy = sinh_ke_tiep_chinh_hop(n, k)
                 
                 if che_do != 'dem':
                     total_pages = (len(full_de_quy) + per_page - 1) // per_page

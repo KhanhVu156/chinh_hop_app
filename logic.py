@@ -97,7 +97,7 @@ def sinh_ke_tiep_chinh_hop(n, k):
 # ==============================================================================
 # HÀM TẠO TRACE CHO VISUALIZER (MÔ PHỎNG)
 # ==============================================================================
-def liet_ke_chinh_hop_co_trace(n, k, max_steps=5000):
+def liet_ke_chinh_hop_co_trace(n, k, max_steps=1000): # TỐI ƯU: Giảm max_steps xuống 1000 để nhẹ JSON, tránh treo trình duyệt
     """Tạo trace mô phỏng từng bước của thuật toán đệ quy."""
     if k < 0 or k > n: return [], []
     

@@ -6,7 +6,6 @@
     <title>Web Thuật Toán Chỉnh Hợp Không Lặp</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
     <style>
-        /* Thêm CSS để khung mã giả tự cuộn nếu quá dài */
         .pseudo-code { 
             background: var(--bg-log); 
             border: 1px solid var(--border-color); 
@@ -132,6 +131,15 @@
           </div>
         </div>
         {% endif %} 
+        
+        <!-- NÚT KIỂM TRA TÍNH ĐÚNG -->
+        <div class="result-box mt-20" style="text-align: center;">
+            <button id="btn-verify" class="btn-control btn-primary" style="width: 100%; height: 45px; margin-bottom: 10px;">🛡️ Chạy kiểm tra tính đúng</button>
+            <div id="verify-results" style="display: none; text-align: left; font-size: 13px; background: var(--bg-panel); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                <!-- Kết quả sẽ được chèn bằng JS ở đây -->
+            </div>
+        </div>
+        
         {% endif %}
       </aside>
 
@@ -273,6 +281,51 @@
       const quizQuestion = document.getElementById("quiz-question");
       const quizOptions = document.getElementById("quiz-options");
       const quizFeedback = document.getElementById("quiz-feedback");
+
+      // Xử lý sự kiện nút Validation
+      const current_n = {{ n if da_chay else 0 }};
+      const current_k = {{ k if da_chay else 0 }};
+      const btnVerify = document.getElementById("btn-verify");
+      const verifyResults = document.getElementById("verify-results");
+
+      if (btnVerify) {
+          btnVerify.addEventListener("click", () => {
+              btnVerify.innerText = "Đang kiểm tra...";
+              btnVerify.disabled = true;
+              verifyResults.style.display = "none";
+              
+              fetch(`/api/verify?n=${current_n}&k=${current_k}`)
+                  .then(res => res.json())
+                  .then(data => {
+                      btnVerify.innerText = "Chạy kiểm tra tính đúng";
+                      btnVerify.disabled = false;
+                      verifyResults.style.display = "block";
+                      
+                      if (data.error) {
+                          verifyResults.innerHTML = `<p style="color: red; font-weight: bold;">Lỗi: ${data.error}</p>`;
+                          return;
+                      }
+                      
+                      let html = `<h4 style="color: ${data.all_passed ? 'var(--success-color)' : 'var(--danger-color)'}; margin-bottom: 10px;">`;
+                      html += data.all_passed ? "✅ TẤT CẢ ĐỀU ĐẠT" : "❌ CÓ LỖI XẢY RA";
+                      html += `</h4><ul style="padding-left: 20px; line-height: 1.6;">`;
+                      
+                      data.results.forEach(r => {
+                          let icon = r.status ? "🟢" : "🔴";
+                          let style = r.status ? "color: var(--text-main);" : "color: var(--danger-color); font-weight: bold;";
+                          html += `<li style="${style} margin-bottom: 5px;">${icon} ${r.name}</li>`;
+                      });
+                      html += `</ul>`;
+                      verifyResults.innerHTML = html;
+                  })
+                  .catch(err => {
+                      btnVerify.innerText = "🛡️ Chạy kiểm tra tính đúng";
+                      btnVerify.disabled = false;
+                      verifyResults.style.display = "block";
+                      verifyResults.innerHTML = `<p style="color: red;">Lỗi kết nối đến server</p>`;
+                  });
+          });
+      }
 
       function renderArray(container, arr, isUsed = false) {
           container.innerHTML = "";

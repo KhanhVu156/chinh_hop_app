@@ -1,5 +1,6 @@
 import math
 import time
+import itertools
 
 # ==============================================================================
 # BÀI TOÁN: LIỆT KÊ CHỈNH HỢP KHÔNG LẶP CHẬP K CỦA N PHẦN TỬ
@@ -22,7 +23,6 @@ def thu_chinh_hop(i, k, n, x, used, ket_qua, elements=None):
     """Hàm đệ quy thử các giá trị cho vị trí thứ i."""
     # Điều kiện dừng: Đã điền đủ k vị trí
     if i > k:
-        # Nếu có mảng ký tự, map giá trị số sang ký tự tương ứng
         res = [elements[v-1] if elements else v for v in x[1:]]
         ket_qua.append(res) 
         return
@@ -32,22 +32,20 @@ def thu_chinh_hop(i, k, n, x, used, ket_qua, elements=None):
         if not used[j]:
             # Tư duy: Chọn j cho vị trí i
             x[i] = j
-            used[j] = True # Đánh dấu đã dùng
+            used[j] = True 
             
             # Đệ quy xử lý vị trí tiếp theo
             thu_chinh_hop(i + 1, k, n, x, used, ket_qua, elements)
             
-            # Tư duy: Quay lui (Backtrack)
-            # Sau khi thử xong nhánh với j, ta phải bỏ đánh dấu để 
-            # các nhánh khác có thể sử dụng lại giá trị j.
+            # Tư duy: Quay lui (Backtrack) - Bỏ đánh dấu để nhánh khác dùng lại
             used[j] = False
 
 def liet_ke_chinh_hop(n, k, elements=None):
     """Hàm chính khởi tạo và gọi đệ quy."""
     if k < 0 or k > n:
         return []
-    x = [0] * (k + 1) # Mảng 1-based
-    used = [False] * (n + 1) # Mảng 1-based
+    x = [0] * (k + 1)
+    used = [False] * (n + 1)
     ket_qua = []
     thu_chinh_hop(1, k, n, x, used, ket_qua, elements)
     return ket_qua
@@ -84,7 +82,7 @@ def sinh_ke_tiep_chinh_hop(n, k):
             i -= 1
         
         if i < 0:
-            break # Đã là cấu hình cuối cùng
+            break
             
         for j in range(i + 1, k):
             val = 1
@@ -100,13 +98,7 @@ def sinh_ke_tiep_chinh_hop(n, k):
 # HÀM TẠO TRACE CHO VISUALIZER (MÔ PHỎNG)
 # ==============================================================================
 def liet_ke_chinh_hop_co_trace(n, k, max_steps=5000):
-    """
-    Tương tự hàm đệ quy gốc nhưng ghi lại trạng thái từng bước.
-    Trả về danh sách các bước để Frontend vẽ animation.
-    TỐI ƯU: Thêm tham số max_steps để giới hạn số bước ghi lại,
-    tránh tạo ra hàng trăm nghìn bước gây treo trình duyệt.
-    NÂNG CẤP: Thêm call_stack và pseudo_line để phục vụ mục tiêu 1.
-    """
+    """Tạo trace mô phỏng từng bước của thuật toán đệ quy."""
     if k < 0 or k > n: return [], []
     
     x = [0] * (k + 1)
@@ -201,7 +193,7 @@ def liet_ke_cat_nhanh(n, k, rang_buoc=None):
             if not used[j]:
                 hop_le = True
                 if rang_buoc:
-                    # Cắt nhánh sớm: Nếu vi phạm, không đi tiếp nhánh này
+                    # Tư duy cắt nhánh: Kiểm tra sớm, nếu vi phạm thì dừng nhánh này
                     if i == 1 and 'not_first' in rang_buoc and j == rang_buoc['not_first']:
                         hop_le = False
                     if i > 1 and 'not_adjacent' in rang_buoc:
@@ -234,3 +226,46 @@ def do_hieu_qua(n, k, rang_buoc=None):
         "cat_nhanh": {"so_nghiem": len(kq2), "thoi_gian_ms": round(time2, 4), "nhanh_loai": so_nhanh_cat},
         "hop_le": kq1 == kq2
     }
+
+# ==============================================================================
+# KIỂM TRA TÍNH ĐÚNG ĐẮN (VALIDATION)
+# ==============================================================================
+def kiem_tra_tinh_dung(n, k):
+    """Chạy các bài kiểm tra tự động để chứng minh tính đúng của thuật toán."""
+    results = []
+    try:
+        ket_qua = liet_ke_chinh_hop(n, k)
+    except Exception as e:
+        return [{"name": "Chạy thuật toán", "status": False, "msg": str(e)}]
+        
+    # 1. Kiểm tra số lượng so với A(n,k)
+    so_luong_thuc_te = len(ket_qua)
+    so_luong_ly_thuyet = so_chinh_hop(n, k)
+    results.append({
+        "name": f"Số lượng nghiệm khớp A(n,k) (Thực tế: {so_luong_thuc_te} / Lý thuyết: {so_luong_ly_thuyet})", 
+        "status": so_luong_thuc_te == so_luong_ly_thuyet
+    })
+    
+    # 2. Kiểm tra cấu trúc nghiệm
+    valid_length = all(len(day) == k for day in ket_qua)
+    unique_in_perm = all(len(set(day)) == k for day in ket_qua)
+    in_range = all(all(1 <= x <= n for x in day) for day in ket_qua)
+    
+    results.append({"name": "Mỗi nghiệm có đúng k phần tử", "status": valid_length})
+    results.append({"name": "Các phần tử trong 1 nghiệm không lặp lại", "status": unique_in_perm})
+    results.append({"name": "Các phần tử đều thuộc khoảng [1, n]", "status": in_range})
+    
+    # 3. Kiểm tra trùng lặp danh sách
+    unique_list = len(set(tuple(x) for x in ket_qua)) == so_luong_thuc_te
+    results.append({"name": "Danh sách không có 2 nghiệm trùng nhau", "status": unique_list})
+    
+    # 4. Đối chiếu với thư viện chuẩn itertools.permutations
+    if k > 0:
+        it_kq = [list(p) for p in itertools.permutations(range(1, n+1), k)]
+        ket_qua_sorted = sorted([tuple(x) for x in ket_qua])
+        it_kq_sorted = sorted([tuple(x) for x in it_kq])
+        results.append({"name": "Đối chiếu chéo với thư viện chuẩn itertools", "status": ket_qua_sorted == it_kq_sorted})
+    else:
+        results.append({"name": "Trường hợp biên k=0 trả về [[]]", "status": ket_qua == [[]]})
+        
+    return results

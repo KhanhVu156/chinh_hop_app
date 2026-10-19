@@ -1,15 +1,14 @@
 from flask import Flask, render_template, request, jsonify, g
 import sqlite3
-# Import thêm 2 hàm mới xử lý ràng buộc
 from logic import (so_chinh_hop, liet_ke_chinh_hop, sinh_ke_tiep_chinh_hop, 
-                   liet_ke_chinh_hop_co_trace, liet_ke_cat_nhanh, do_hieu_qua)
+                   liet_ke_chinh_hop_co_trace, liet_ke_cat_nhanh, do_hieu_qua, kiem_tra_tinh_dung)
 import os
 
 app = Flask(__name__)
 DATABASE = 'history.db'
 
 # ==============================================================================
-# QUẢN LÝ DATABASE (Lưu lịch sử)
+# QUẢN LÝ DATABASE
 # ==============================================================================
 def get_db():
     db = getattr(g, '_database', None)
@@ -27,7 +26,6 @@ def close_connection(exception):
 def init_db():
     with app.app_context():
         db = get_db()
-        # Cập nhật thêm cột co_rang_buoc và che_do cho bảng history
         db.execute('''CREATE TABLE IF NOT EXISTS history 
                       (id INTEGER PRIMARY KEY AUTOINCREMENT, 
                        n INTEGER, k INTEGER, so_luong INTEGER, 
@@ -41,19 +39,18 @@ if not os.path.exists(DATABASE):
 
 def luu_lich_su(n, k, so_luong, co_rang_buoc, che_do):
     db = get_db()
-    # Thử thêm cột nếu database đã tồn tại từ phiên bản cũ
     try:
         db.execute('ALTER TABLE history ADD COLUMN co_rang_buoc INTEGER DEFAULT 0')
         db.execute('ALTER TABLE history ADD COLUMN che_do TEXT DEFAULT "hoc"')
     except sqlite3.OperationalError:
-        pass # Cột đã tồn tại
+        pass
         
     db.execute('INSERT INTO history (n, k, so_luong, co_rang_buoc, che_do) VALUES (?, ?, ?, ?, ?)', 
                (n, k, so_luong, 1 if co_rang_buoc else 0, che_do))
     db.commit()
 
 # ==============================================================================
-# HÀM TÍNH DẢI PHÂN TRANG THÔNG MINH (SMART PAGINATION)
+# HÀM TÍNH DẢI PHÂN TRANG THÔNG MINH
 # ==============================================================================
 def get_pagination_range(current_page, total_pages, window=2):
     if total_pages <= (window * 2) + 5:
@@ -75,7 +72,7 @@ def get_pagination_range(current_page, total_pages, window=2):
     return result
 
 # ==============================================================================
-# LUỒNG XỬ LÝ CHÍNH (Giao diện)
+# LUỒNG XỬ LÝ CHÍNH
 # ==============================================================================
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -94,7 +91,6 @@ def index():
     n_str = request.form.get('n') if request.method == 'POST' else request.args.get('n')
     k_str = request.form.get('k') if request.method == 'POST' else request.args.get('k')
     
-    # Lấy tham số chế độ hiển thị và ràng buộc
     che_do = request.form.get('che_do') if request.method == 'POST' else request.args.get('che_do', 'hoc')
     co_rang_buoc = (request.form.get('co_rang_buoc') == 'on') if request.method == 'POST' else (request.args.get('co_rang_buoc') == '1')
 
@@ -114,15 +110,12 @@ def index():
             else:
                 so_luong = so_chinh_hop(n, k)
                 
-                # Xử lý logic dựa trên ràng buộc
                 if co_rang_buoc:
-                    # Ràng buộc mẫu: 1 không đứng đầu, 2 và 3 không đứng cạnh nhau
                     rang_buoc = {'not_first': 1, 'not_adjacent': (2, 3)}
                     full_de_quy, _ = liet_ke_cat_nhanh(n, k, rang_buoc)
                     so_sanh = do_hieu_qua(n, k, rang_buoc)
-                    trace_data = [] # Tạm thời ẩn mô phỏng khi có ràng buộc để tránh xung đột
+                    trace_data = []
                     
-                    # Map số sang ký tự A, B, C, D... để hiển thị đẹp hơn
                     chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                     full_de_quy = [[chars[v-1] for v in day] for day in full_de_quy]
                 else:
@@ -134,7 +127,6 @@ def index():
                         if len(trace_data) >= 5000:
                             trace_truncated = True
                 
-                # Phân trang
                 if che_do != 'dem':
                     total_pages = (len(full_de_quy) + per_page - 1) // per_page
                     start_idx = (page - 1) * per_page
@@ -159,7 +151,6 @@ def index():
     try:
         lich_su = db.execute('SELECT * FROM history ORDER BY id DESC LIMIT 5').fetchall()
     except sqlite3.OperationalError:
-        # Trường hợp db cũ chưa được update cột
         lich_su = []
 
     return render_template('index.html', 
@@ -199,6 +190,24 @@ def api_permutations():
         })
     except ValueError:
         return jsonify({"error": "Invalid parameter type."}), 400
+
+@app.route('/api/verify', methods=['GET'])
+def api_verify():
+    try:
+        n = int(request.args.get('n', 0))
+        k = int(request.args.get('k', 0))
+        if n < 0 or n > 8 or k < 0 or k > n:
+            return jsonify({"error": "Tham số không hợp lệ"}), 400
+            
+        results = kiem_tra_tinh_dung(n, k)
+        all_passed = all(r["status"] for r in results)
+        
+        return jsonify({
+            "all_passed": all_passed,
+            "results": results
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

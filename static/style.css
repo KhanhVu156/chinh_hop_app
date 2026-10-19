@@ -115,7 +115,6 @@ body {
     gap: 15px;
     padding: 15px;
     height: calc(100vh - 70px);
-    /* Trừ đi chiều cao header */
     min-height: 600px;
 }
 
@@ -491,33 +490,42 @@ body {
 .quiz-section-wrapper {
     padding: 0 15px 40px 15px;
     width: 100%;
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
 .quiz-box {
     width: 100%;
     border: 2px solid var(--primary-color);
-    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.15);
     background-color: var(--bg-panel);
     border-radius: 8px;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
-.quiz-header {
-    padding: 15px 20px;
-    border-bottom: 1px solid var(--border-color);
-    background: var(--bg-hover);
-    border-radius: 8px 8px 0 0;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+.quiz-content {
+    min-height: 150px;
+    /* Đảm bảo khung không bị sụp khi chưa có câu hỏi */
 }
 
-.quiz-title {
-    border: none;
-    padding: 0;
-    background: transparent;
-    color: var(--text-main);
-    font-size: 18px;
+.quiz-footer {
+    padding: 20px;
+    background-color: var(--bg-hover);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.quiz-footer .btn-control {
+    width: auto;
+    min-width: 250px;
+    height: 45px;
+    font-size: 16px;
+    padding: 0 30px;
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
 }
 
 .quiz-option {
@@ -542,9 +550,10 @@ body {
 .quiz-feedback {
     font-weight: bold;
     margin-top: 15px;
-    padding: 10px;
+    padding: 12px;
     border-radius: 6px;
     display: none;
+    text-align: center;
 }
 
 /* ==============================================================================

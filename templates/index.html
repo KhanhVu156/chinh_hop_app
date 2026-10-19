@@ -285,15 +285,21 @@
     {% if da_chay and not error and trace_data and che_do == 'hoc' and not co_rang_buoc %}
     <div class="quiz-section-wrapper" id="quiz-panel">
       <div class="quiz-box panel">
-        <div class="quiz-header" style="display: flex; flex-direction: column; align-items: flex-start; gap: 10px;">
-            <button id="btn-new-quiz" class="btn-control btn-primary" style="width: auto; height: 38px; padding: 0 20px; font-size: 14px;">Tạo câu hỏi ngẫu nhiên</button>
-            <h2 class="panel-title quiz-title" style="margin-top: 5px;">Khu Vực Ôn Tập Tương Tác</h2>
-        </div>
-        <div style="padding: 20px;">
-            <p id="quiz-question" style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">Nhấn "Tạo câu hỏi ngẫu nhiên" để bắt đầu ôn tập kiến thức.</p>
+        
+        <!-- Nội dung câu hỏi -->
+        <div class="quiz-content" style="padding: 25px 20px;">
+            <p id="quiz-question" style="font-size: 18px; font-weight: bold; margin-bottom: 15px; text-align: center; color: var(--text-main);">
+                Nhấn nút bên dưới để bắt đầu ôn tập kiến thức.
+            </p>
             <div id="quiz-options"></div>
             <p class="quiz-feedback" id="quiz-feedback"></p>
         </div>
+
+        <!-- Nút tạo câu hỏi nằm dưới cùng trong hộp -->
+        <div class="quiz-footer">
+            <button id="btn-new-quiz" class="btn-control btn-primary">🎲 Tạo câu hỏi ngẫu nhiên</button>
+        </div>
+
       </div>
     </div>
     {% endif %}

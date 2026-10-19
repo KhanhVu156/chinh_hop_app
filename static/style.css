@@ -160,7 +160,8 @@ body {
     font-weight: 500;
 }
 
-.form-group input[type="number"] {
+.form-group input[type="number"],
+.form-group select {
     padding: 10px;
     border-radius: 6px;
     border: 1px solid var(--border-color);
@@ -170,17 +171,12 @@ body {
     outline: none;
 }
 
-.form-group input[type="number"]:focus {
+.form-group input[type="number"]:focus,
+.form-group select:focus {
     border-color: var(--primary-color);
 }
 
-.checkbox-group {
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
-}
-
-.checkbox-group input {
+.form-group input[type="checkbox"] {
     width: 18px;
     height: 18px;
     cursor: pointer;
@@ -245,29 +241,40 @@ body {
 }
 
 /* ==============================================================================
-   VISUALIZER
+   VISUALIZER (CỘT GIỮA)
    ============================================================================== */
 .visual-panel {
     padding: 20px;
-    position: relative;
+    overflow-y: auto;
+    /* QUAN TRỌNG: Thêm thanh cuộn để không bị che nút */
+}
+
+/* Tùy chỉnh thanh cuộn cho đẹp */
+.visual-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.visual-panel::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
 }
 
 .visualizer-container {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    justify-content: space-between;
+    gap: 15px;
+    /* Khoảng cách giữa các khối */
 }
 
 .visualizer-display {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
 }
 
 .state-box {
     background-color: var(--bg-body);
-    padding: 20px;
+    padding: 15px;
     border-radius: 8px;
     border: 1px solid var(--border-color);
 }
@@ -275,13 +282,54 @@ body {
 .state-box h3 {
     font-size: 14px;
     color: var(--text-muted);
-    margin-bottom: 15px;
+    margin-bottom: 10px;
+}
+
+/* Mã giả */
+.pseudo-code {
+    background: var(--bg-log);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 13px;
+}
+
+.pseudo-line {
+    padding: 2px 5px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.pseudo-active {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+}
+
+/* Ngăn xếp */
+.stack-container {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+    min-height: 30px;
+}
+
+.stack-item {
+    padding: 4px 10px;
+    background: var(--success-color);
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
 }
 
 .action-box p {
     color: var(--primary-color);
     font-weight: bold;
-    font-size: 16px;
+    font-size: 15px;
 }
 
 .empty-state {
@@ -296,18 +344,19 @@ body {
 .array-visual {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .vis-box {
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: var(--bg-panel);
     border: 2px solid var(--border-color);
     border-radius: 8px;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
     position: relative;
     transition: all 0.3s ease;
@@ -315,7 +364,7 @@ body {
 
 .vis-index {
     position: absolute;
-    top: -20px;
+    top: -18px;
     font-size: 12px;
     color: var(--text-muted);
 }
@@ -333,20 +382,25 @@ body {
     color: var(--text-inverse);
 }
 
+/* ==============================================================================
+   ĐIỀU KHIỂN (CONTROLS) & QUIZ
+   ============================================================================== */
 .controls {
     display: flex;
-    gap: 15px;
+    gap: 10px;
     justify-content: center;
-    margin-top: 20px;
+    margin-top: 10px;
+    flex-wrap: wrap;
 }
 
 .btn-control {
-    padding: 12px 24px;
+    padding: 10px 15px;
     background-color: var(--bg-hover);
     border: 1px solid var(--border-color);
     border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
+    color: var(--text-main);
 }
 
 .btn-control:hover {
@@ -368,8 +422,54 @@ body {
     background-color: var(--danger-hover);
 }
 
+.speed-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-hover);
+    padding: 5px 15px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    font-size: 14px;
+}
+
+/* Quiz Box */
+.quiz-box {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid var(--primary-color);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.quiz-box h3 {
+    margin-bottom: 10px;
+}
+
+.quiz-option {
+    display: block;
+    margin: 8px 0;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 4px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    transition: background 0.2s;
+}
+
+.quiz-option:hover {
+    background: var(--bg-hover);
+}
+
+.quiz-feedback {
+    font-weight: bold;
+    margin-top: 10px;
+    display: none;
+}
+
+
 /* ==============================================================================
-   LOG & HISTORY
+   LOG & HISTORY (CỘT PHẢI)
    ============================================================================== */
 .log-panel {
     padding: 0;
@@ -448,7 +548,7 @@ body {
 }
 
 /* ==============================================================================
-   PAGINATION & SCROLLBAR
+   PAGINATION
    ============================================================================== */
 .pagination {
     display: flex;
@@ -495,105 +595,4 @@ body {
 
 .mt-20 {
     margin-top: 20px;
-}
-
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: var(--bg-body);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--text-muted);
-}
-
-/* Thêm CSS cho Pseudo-code, Stack, Quiz */
-.pseudo-code {
-    background: var(--bg-log);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 10px;
-    font-family: monospace;
-    margin-bottom: 15px;
-    font-size: 13px;
-}
-
-.pseudo-line {
-    padding: 2px 5px;
-    border-radius: 4px;
-    transition: all 0.2s;
-    color: var(--text-muted);
-}
-
-.pseudo-active {
-    background-color: var(--primary-color);
-    color: white;
-    font-weight: bold;
-}
-
-.stack-container {
-    display: flex;
-    gap: 5px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-}
-
-.stack-item {
-    padding: 4px 8px;
-    background: var(--success-color);
-    color: white;
-    border-radius: 4px;
-    font-size: 12px;
-}
-
-.controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-    margin-top: 15px;
-}
-
-.speed-control {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--bg-hover);
-    padding: 5px 15px;
-    border-radius: 6px;
-}
-
-.quiz-box {
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid var(--primary-color);
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 15px;
-}
-
-.quiz-option {
-    display: block;
-    margin: 5px 0;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 4px;
-    background: var(--bg-panel);
-    border: 1px solid var(--border-color);
-}
-
-.quiz-option:hover {
-    background: var(--bg-hover);
-}
-
-.quiz-feedback {
-    font-weight: bold;
-    margin-top: 10px;
-    display: none;
 }

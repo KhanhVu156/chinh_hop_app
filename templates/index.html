@@ -145,7 +145,7 @@
 
       <!-- CỘT GIỮA -->
       <main class="panel visual-panel">
-        <h2 class="panel-title">MÔ PHỎNG & LUYỆN TẬP</h2>
+        <h2 class="panel-title">MÔ PHỎNG THUẬT TOÁN</h2>
 
         {% if da_chay and not error and trace_data and che_do == 'hoc' and not co_rang_buoc %}
         <div class="visualizer-container">
@@ -199,14 +199,6 @@
                 <p id="vis-action">Nhấn "Tự động chạy" để bắt đầu</p>
               </div>
             </div>
-          </div>
-
-          <!-- QUIZ -->
-          <div class="quiz-box" id="quiz-panel" style="display: none">
-            <h3 style="color: var(--primary-color); margin-bottom: 10px">Luyện tập tương tác</h3>
-            <p id="quiz-question">Đang tải...</p>
-            <div id="quiz-options"></div>
-            <p class="quiz-feedback" id="quiz-feedback"></p>
           </div>
 
           <!-- CONTROLS -->
@@ -271,6 +263,18 @@
         </div>
         {% endif %}
       </aside>
+    </div>
+
+    <!-- KHU VỰC LUYỆN TẬP TƯƠNG TÁC (TÁCH RIÊNG BÊN DƯỚI) -->
+    <div class="quiz-section-wrapper" id="quiz-panel" style="display: none;">
+      <div class="quiz-box panel">
+        <h2 class="panel-title" style="color: var(--primary-color); border-bottom: none;">🎯 Luyện Tập Tương Tác</h2>
+        <div style="padding: 20px;">
+            <p id="quiz-question" style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">Đang tải...</p>
+            <div id="quiz-options"></div>
+            <p class="quiz-feedback" id="quiz-feedback"></p>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -386,6 +390,9 @@
           }
 
           quizPanel.style.display = "block";
+          // Tự động cuộn xuống khung Quiz khi nó xuất hiện
+          quizPanel.scrollIntoView({ behavior: "smooth", block: "end" });
+          
           quizFeedback.style.display = "none";
           quizOptions.innerHTML = "";
 
@@ -448,7 +455,6 @@
       function stepForward() { if (currentStep < traceData.length - 1) { currentStep++; updateUI(); } }
       function pauseAuto() { if (playInterval) { clearInterval(playInterval); playInterval = null; btnPlay.innerText = "Tự động chạy"; } }
       
-      // Hàm đảo ngược giá trị tốc độ: Trái (100) -> Delay 2000, Phải (2000) -> Delay 100
       function getDelay() {
           return 2100 - parseInt(speedRange.value);
       }
@@ -482,6 +488,7 @@
               quizPanel.style.display = "none";
               logContainer.innerHTML = '<p class="log-placeholder">Đã reset.</p>';
               highlightPseudo(0);
+              window.scrollTo({ top: 0, behavior: 'smooth' }); // Cuộn lên đầu khi reset
           });
           speedRange.addEventListener("input", () => {
               if (playInterval) { 

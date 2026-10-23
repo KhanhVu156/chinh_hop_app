@@ -470,15 +470,21 @@ body {
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 40px;
+    min-height: 40px;
+    /* Chiều cao tối thiểu */
+    height: auto;
+    /* Tự động giãn chiều cao nếu text dài */
     margin-top: 15px;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 13px;
+    /* Giảm nhẹ font size để vừa vặn hơn */
     white-space: normal;
-    /* Cho phép xuống dòng nếu cần */
-    line-height: 1.2;
+    /* Cho phép xuống dòng */
+    line-height: 1.3;
     text-align: center;
-    padding: 5px;
+    padding: 8px 10px;
+    word-wrap: break-word;
+    /* Tự động ngắt từ nếu quá dài */
 }
 
 .speed-control {

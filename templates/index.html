@@ -51,17 +51,13 @@
         <h2 class="panel-title">CẤU HÌNH BÀI TOÁN</h2>
         <form method="POST" class="input-form">
           <div class="form-group">
-            <!-- Label sẽ được cập nhật động bằng JS dựa trên chế độ -->
+            <!-- Đã xóa bỏ max và validate của HTML5 để tránh lỗi "ảo" -->
             <label id="label-n">Nhập n (0 ≤ n ≤ 10):</label>
-            <input type="number" name="n" value="{{ n if da_chay else '' }}" min="0" max="10" required 
-                   oninvalid="this.setCustomValidity('Vui lòng nhập n trong khoảng từ 0 đến 10')"
-                   oninput="this.setCustomValidity('')" />
+            <input type="number" name="n" value="{{ n if da_chay else '' }}" min="0" required />
           </div>
           <div class="form-group">
             <label>Nhập k (0 ≤ k ≤ n):</label>
-            <input type="number" name="k" value="{{ k if da_chay else '' }}" min="0" required 
-                   oninvalid="this.setCustomValidity('Vui lòng nhập số nguyên dương cho k')"
-                   oninput="this.setCustomValidity('')" />
+            <input type="number" name="k" value="{{ k if da_chay else '' }}" min="0" required />
           </div>
 
           <div class="form-group">
@@ -151,11 +147,10 @@
             {% endfor %}
           </div>
 
-          <!-- MỞ RỘNG 2: Nút tải CSV (Stream, không tốn RAM) -->
+          <!-- Nút tải CSV -->
           <div style="margin-top: 15px; text-align: center;">
-            <a href="/api/export?n={{ n }}&k={{ k }}" class="btn-control btn-primary" 
-               style="display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 40px; text-decoration: none; font-size: 14px;">
-                ⬇️ Tải xuống CSV (Toàn bộ {{ so_luong }} kết quả)
+            <a href="/api/export?n={{ n }}&k={{ k }}" class="btn-control btn-primary btn-export">
+                Tải xuống CSV (Toàn bộ {{ so_luong }} kết quả)
             </a>
           </div>
         </div>
@@ -341,28 +336,24 @@
       const quizFeedback = document.getElementById("quiz-feedback");
       const btnNewQuiz = document.getElementById("btn-new-quiz");
 
-      // --- MỞ RỘNG 3: Cập nhật giới hạn n động theo chế độ & ràng buộc ---
-      // Giúp người dùng biết mình có thể nhập n tối đa bao nhiêu
+      // --- Cập nhật giới hạn n động theo chế độ & ràng buộc ---
       const nInput = document.querySelector('input[name="n"]');
       const cheDoSelect = document.querySelector('select[name="che_do"]');
       const rangBuocCheckbox = document.querySelector('input[name="co_rang_buoc"]');
       const labelN = document.getElementById("label-n");
 
       function updateMaxN() {
-          if (!nInput) return;
+          if (!labelN) return;
           let maxN = 10; // Mặc định cho chế độ "Chỉ liệt kê"
           if (rangBuocCheckbox && rangBuocCheckbox.checked) {
-              maxN = 8;  // Ràng buộc phải sinh toàn bộ mảng
+              maxN = 8;
           } else if (cheDoSelect && cheDoSelect.value === 'dem') {
-              maxN = 12; // Chỉ đếm nên không tốn RAM
+              maxN = 12;
           } else if (cheDoSelect && cheDoSelect.value === 'hoc') {
-              maxN = 11; // Trace dừng ở 1000 bước
+              maxN = 11;
           }
-          nInput.max = maxN;
-          nInput.setAttribute('oninvalid', `this.setCustomValidity('Vui lòng nhập n trong khoảng từ 0 đến ${maxN}')`);
-          if (labelN) {
-              labelN.innerText = `Nhập n (0 ≤ n ≤ ${maxN}):`;
-          }
+          // Chỉ cập nhật Label để hiển thị cho người dùng. Backend sẽ là nơi kiểm tra hợp lệ cuối cùng để tránh lỗi HTML5.
+          labelN.innerText = `Nhập n (0 ≤ n ≤ ${maxN}):`;
       }
 
       if (nInput && cheDoSelect) {

@@ -51,15 +51,14 @@
         <h2 class="panel-title">CẤU HÌNH BÀI TOÁN</h2>
         <form method="POST" class="input-form">
           <div class="form-group">
-            <label>Nhập n (0 ≤ n ≤ 8):</label>
-            <!-- Đã sửa thông báo lỗi HTML5 sang tiếng Việt -->
-            <input type="number" name="n" value="{{ n if da_chay else '' }}" min="0" max="8" required 
-                   oninvalid="this.setCustomValidity('Vui lòng nhập n trong khoảng từ 0 đến 8')"
+            <!-- Label sẽ được cập nhật động bằng JS dựa trên chế độ -->
+            <label id="label-n">Nhập n (0 ≤ n ≤ 10):</label>
+            <input type="number" name="n" value="{{ n if da_chay else '' }}" min="0" max="10" required 
+                   oninvalid="this.setCustomValidity('Vui lòng nhập n trong khoảng từ 0 đến 10')"
                    oninput="this.setCustomValidity('')" />
           </div>
           <div class="form-group">
             <label>Nhập k (0 ≤ k ≤ n):</label>
-            <!-- Đã sửa thông báo lỗi HTML5 sang tiếng Việt -->
             <input type="number" name="k" value="{{ k if da_chay else '' }}" min="0" required 
                    oninvalid="this.setCustomValidity('Vui lòng nhập số nguyên dương cho k')"
                    oninput="this.setCustomValidity('')" />
@@ -150,6 +149,14 @@
             {% for day in ket_qua_de_quy %}
             <span class="array-item">[{{ day | join(', ') }}]</span>
             {% endfor %}
+          </div>
+
+          <!-- MỞ RỘNG 2: Nút tải CSV (Stream, không tốn RAM) -->
+          <div style="margin-top: 15px; text-align: center;">
+            <a href="/api/export?n={{ n }}&k={{ k }}" class="btn-control btn-primary" 
+               style="display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 40px; text-decoration: none; font-size: 14px;">
+                ⬇️ Tải xuống CSV (Toàn bộ {{ so_luong }} kết quả)
+            </a>
           </div>
         </div>
         {% endif %} 
@@ -333,6 +340,38 @@
       const quizOptions = document.getElementById("quiz-options");
       const quizFeedback = document.getElementById("quiz-feedback");
       const btnNewQuiz = document.getElementById("btn-new-quiz");
+
+      // --- MỞ RỘNG 3: Cập nhật giới hạn n động theo chế độ & ràng buộc ---
+      // Giúp người dùng biết mình có thể nhập n tối đa bao nhiêu
+      const nInput = document.querySelector('input[name="n"]');
+      const cheDoSelect = document.querySelector('select[name="che_do"]');
+      const rangBuocCheckbox = document.querySelector('input[name="co_rang_buoc"]');
+      const labelN = document.getElementById("label-n");
+
+      function updateMaxN() {
+          if (!nInput) return;
+          let maxN = 10; // Mặc định cho chế độ "Chỉ liệt kê"
+          if (rangBuocCheckbox && rangBuocCheckbox.checked) {
+              maxN = 8;  // Ràng buộc phải sinh toàn bộ mảng
+          } else if (cheDoSelect && cheDoSelect.value === 'dem') {
+              maxN = 12; // Chỉ đếm nên không tốn RAM
+          } else if (cheDoSelect && cheDoSelect.value === 'hoc') {
+              maxN = 11; // Trace dừng ở 1000 bước
+          }
+          nInput.max = maxN;
+          nInput.setAttribute('oninvalid', `this.setCustomValidity('Vui lòng nhập n trong khoảng từ 0 đến ${maxN}')`);
+          if (labelN) {
+              labelN.innerText = `Nhập n (0 ≤ n ≤ ${maxN}):`;
+          }
+      }
+
+      if (nInput && cheDoSelect) {
+          updateMaxN();
+          cheDoSelect.addEventListener('change', updateMaxN);
+          if (rangBuocCheckbox) {
+              rangBuocCheckbox.addEventListener('change', updateMaxN);
+          }
+      }
 
       // Xử lý logic Dark/Light Mode (Toggle Switch)
       const themeCheckbox = document.getElementById("checkbox-theme");

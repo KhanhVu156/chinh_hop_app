@@ -94,6 +94,46 @@ def sinh_ke_tiep_chinh_hop(n, k):
     
     return ket_qua
 
+def sinh_ke_tiep_chinh_hop_generator(n, k):
+    """
+    MỞ RỘNG 3: Tối ưu bộ nhớ bằng Generator.
+    Thay vì trả về toàn bộ List, hàm yield từng chỉnh hợp.
+    Kết hợp với itertools.islice, ta có thể lấy 50 phần tử của 1 trang
+    mà không cần sinh toàn bộ mảng -> tránh tràn RAM với n lớn (n=10, 11).
+    """
+    if k == 0:
+        yield []
+        return
+    if k > n:
+        return
+
+    x = list(range(1, k + 1))
+    yield list(x)
+    
+    while True:
+        i = k - 1
+        while i >= 0:
+            found_next = False
+            for v in range(x[i] + 1, n + 1):
+                if v not in x[0:i]:
+                    x[i] = v
+                    found_next = True
+                    break
+            if found_next:
+                break
+            i -= 1
+        
+        if i < 0:
+            break
+            
+        for j in range(i + 1, k):
+            val = 1
+            while val in x[0:j]:
+                val += 1
+            x[j] = val
+            
+        yield list(x)
+
 # ==============================================================================
 # HÀM TẠO TRACE CHO VISUALIZER (MÔ PHỎNG)
 # ==============================================================================

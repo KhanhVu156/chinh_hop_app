@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, jsonify, g
+from flask import Flask, render_template, request, jsonify, g, Response
 import sqlite3
+import itertools
 from logic import (so_chinh_hop, liet_ke_chinh_hop, sinh_ke_tiep_chinh_hop, 
-                   liet_ke_chinh_hop_co_trace, liet_ke_cat_nhanh, do_hieu_qua, kiem_tra_tinh_dung)
+                   liet_ke_chinh_hop_co_trace, liet_ke_cat_nhanh, do_hieu_qua, 
+                   kiem_tra_tinh_dung, sinh_ke_tiep_chinh_hop_generator)
 import os
 
 app = Flask(__name__)
@@ -102,14 +104,32 @@ def index():
             
             if request.method == 'POST':
                 page = 1
-                
-            if n < 0 or n > 8:
-                error = "Vui lòng nhập n trong khoảng 0 đến 8."
+
+            # ------------------------------------------------------------------
+            # MỞ RỘNG 3: Xác định giới hạn n động dựa trên chế độ
+            # - Ràng buộc: sinh toàn bộ mảng -> giới hạn 8 (an toàn RAM)
+            # - Chỉ đếm: chỉ tính công thức -> giới hạn 12
+            # - Học từng bước: trace dừng ở 1000 bước -> giới hạn 11
+            # - Chỉ liệt kê: dùng generator + islice -> giới hạn 10
+            # ------------------------------------------------------------------
+            if co_rang_buoc:
+                max_n = 8
+            elif che_do == 'dem':
+                max_n = 12
+            elif che_do == 'hoc':
+                max_n = 11
+            else:  # liet_ke
+                max_n = 10
+
+            if n < 0:
+                error = "Vui lòng nhập n là số nguyên không âm."
+            elif n > max_n:
+                error = f"Chế độ hiện tại chỉ hỗ trợ n trong khoảng 0 đến {max_n}."
             elif k < 0 or k > n:
                 error = "Vui lòng nhập k thỏa mãn 0 <= k <= n."
             else:
                 so_luong = so_chinh_hop(n, k)
-                
+
                 if co_rang_buoc:
                     rang_buoc = {'not_first': 1, 'not_adjacent': (2, 3)}
                     full_de_quy, _ = liet_ke_cat_nhanh(n, k, rang_buoc)
@@ -118,31 +138,38 @@ def index():
                     
                     chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                     full_de_quy = [[chars[v-1] for v in day] for day in full_de_quy]
-                else:
-                    # TỐI ƯU HÓA: Phân luồng xử lý thông minh, không sinh mảng thừa
-                    if che_do == 'dem':
-                        # Chế độ đếm: Trả về ngay, không sinh mảng
-                        full_de_quy = []
-                    elif che_do == 'hoc':
-                        # Chế độ học từng bước: CHỈ sinh trace, KHÔNG sinh toàn bộ mảng kết quả để tránh treo web
-                        _, trace_data = liet_ke_chinh_hop_co_trace(n, k, max_steps=1000)
-                        full_de_quy = []
-                        # Bật cờ thông báo nếu số bước vượt quá 1000
-                        if len(trace_data) >= 1000:
-                            trace_truncated = True
-                    else: # che_do == 'liet_ke'
-                        # Chế độ liệt kê: Dùng hàm sinh kế tiếp (nhẹ hơn đệ quy) để lấy kết quả
-                        full_de_quy = sinh_ke_tiep_chinh_hop(n, k)
-                
-                if che_do != 'dem':
-                    total_pages = (len(full_de_quy) + per_page - 1) // per_page
+
+                    # Phân trang cho danh sách đã sinh
+                    total_pages = max(1, (len(full_de_quy) + per_page - 1) // per_page)
                     start_idx = (page - 1) * per_page
                     end_idx = start_idx + per_page
                     ket_qua_de_quy = full_de_quy[start_idx:end_idx]
-                else:
+
+                elif che_do == 'hoc':
+                    # Chế độ học: CHỈ sinh trace, KHÔNG sinh toàn bộ mảng kết quả
+                    _, trace_data = liet_ke_chinh_hop_co_trace(n, k, max_steps=1000)
                     ket_qua_de_quy = []
                     total_pages = 1
-                
+                    # Bật cờ thông báo nếu số bước vượt quá 1000
+                    if len(trace_data) >= 1000:
+                        trace_truncated = True
+
+                elif che_do == 'dem':
+                    # Chế độ đếm: chỉ tính công thức, không sinh mảng
+                    ket_qua_de_quy = []
+                    total_pages = 1
+
+                else:  # che_do == 'liet_ke'
+                    # MỞ RỘNG 3: Dùng Generator + itertools.islice để tiết kiệm RAM
+                    # islice(gen, start_idx, end_idx) sẽ lặp qua generator đến vị trí
+                    # start_idx, bỏ qua các phần tử trước đó, rồi lấy đúng per_page phần tử.
+                    # Không sinh toàn bộ mảng -> an toàn với n=10.
+                    gen = sinh_ke_tiep_chinh_hop_generator(n, k)
+                    total_pages = max(1, (so_luong + per_page - 1) // per_page)
+                    start_idx = (page - 1) * per_page
+                    end_idx = start_idx + per_page
+                    ket_qua_de_quy = list(itertools.islice(gen, start_idx, end_idx))
+
                 if request.method == 'POST':
                     luu_lich_su(n, k, so_luong, co_rang_buoc, che_do)
                     
@@ -215,6 +242,41 @@ def api_verify():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# ==============================================================================
+# MỞ RỘNG 2: XUẤT CSV BẰNG STREAM (KHÔNG LƯU FILE, KHÔNG TỐN RAM)
+# ==============================================================================
+@app.route('/api/export', methods=['GET'])
+def api_export():
+    try:
+        n = int(request.args.get('n', 0))
+        k = int(request.args.get('k', 0))
+        
+        max_n = 12  # Giới hạn cho phép tải vì cần thời gian stream
+        if n < 0 or n > max_n or k < 0 or k > n:
+            return jsonify({"error": f"Tham số không hợp lệ. Yêu cầu 0 <= k <= n <= {max_n}"}), 400
+            
+        def generate_csv():
+            # BOM để Excel nhận diện đúng UTF-8
+            yield '\ufeff'
+            yield 'STT,Chỉnh hợp\n'
+            
+            count = 1
+            # Sử dụng Generator để ghi từng dòng, không load vào RAM
+            for day in sinh_ke_tiep_chinh_hop_generator(n, k):
+                # Định dạng: [1, 2, 3]
+                day_str = "[" + ", ".join(map(str, day)) + "]"
+                yield f"{count},{day_str}\n"
+                count += 1
+                
+        return Response(
+            generate_csv(), 
+            mimetype='text/csv', 
+            headers={'Content-Disposition': f'attachment; filename=chinh_hop_n{n}_k{k}.csv'}
+        )
+        
+    except ValueError:
+        return jsonify({"error": "Invalid parameter type."}), 400
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

@@ -105,23 +105,102 @@ chinh_hop_app/
 
 ---
 
+## ⚙️ Hướng dẫn cài đặt & Chạy
+
+### 🔹 Cách 1: Chạy trực tiếp (Local)
+
+```bash
+# 1. Cài đặt các thư viện cần thiết
+pip install -r requirements.txt
+
+# 2. Chạy ứng dụng
+python app.py
+```
+
+Truy cập giao diện tại: **<http://localhost:5000>**
+
+### 🔹 Cách 2: Chạy bằng Docker (Khuyên dùng)
+
+```bash
+docker compose up --build
+```
+
+Truy cập giao diện tại: **<http://localhost:5000>**
+
+---
+
+## 🧪 Chạy kiểm thử tự động
+
+> ⚠️ **Lưu ý quan trọng**: Trước khi chạy test, cần kích hoạt môi trường ảo (Virtual Environment / Conda) đã cài đủ thư viện trong `requirements.txt`. Khuyến nghị cài **Miniconda** để quản lý môi trường dễ dàng.
+
+### Bước 1: Thiết lập môi trường với Conda
+
+```bash
+# Tạo môi trường mới
+conda create -n webapp python=3.11 -y
+
+# Kích hoạt (thay 'webapp' bằng tên môi trường thực tế)
+conda activate webapp
+
+# Cài đặt thư viện
+pip install -r requirements.txt
+```
+
+### Bước 2: Chạy kiểm thử
+
+```bash
+pytest tests/ -v
+```
+
+---
+
 ## 🌐 RESTful API
 
 ### 1. Liệt kê chỉnh hợp
 
-`GET /api/permutations?n=3&k=2`
+```http
+GET /api/permutations?n=3&k=2
+```
+
+**Response mẫu:**
+
+```json
+{
+  "status": "success",
+  "n": 3,
+  "k": 2,
+  "count": 6,
+  "data": [[1, 2], [1, 3], [2, 1], [2, 3], [3, 1], [3, 2]]
+}
+```
 
 **Điều kiện hợp lệ:** `0 ≤ k ≤ n ≤ 8`. Nếu sai trả về mã `400`.
 
 ### 2. Kiểm tra tính đúng đắn
 
-`GET /api/verify?n=4&k=2`
+```http
+GET /api/verify?n=4&k=2
+```
+
+**Response mẫu:**
+
+```json
+{
+  "all_passed": true,
+  "results": [
+    { "name": "Số lượng nghiệm khớp A(n,k) ...", "status": true },
+    { "name": "Mỗi nghiệm có đúng k phần tử", "status": true }
+  ]
+}
+```
 
 **Điều kiện hợp lệ:** `0 ≤ k ≤ n ≤ 8` (Giới hạn để tránh Timeout server).
 
 ### 3. Xuất dữ liệu CSV (Stream)
 
-`GET /api/export?n=10&k=2`
+```http
+GET /api/export?n=10&k=2
+```
 
 Trả về file `.csv` trực tiếp qua luồng (stream).
 **Điều kiện hợp lệ:** `0 ≤ k ≤ n ≤ 12`.

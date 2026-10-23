@@ -469,49 +469,152 @@
           });
       }
 
-      // --- LOGIC QUIZ ĐỘC LẬP ---
+      // --- LOGIC QUIZ ĐỘNG (AI TẠO CÂU HỎI ĐA DẠNG) ---
       function generateRandomQuiz() {
           if (!traceData || traceData.length === 0) {
-              quizQuestion.innerText = "Không có dữ liệu mô phỏng để tạo câu hỏi.";
+              quizQuestion.innerText = "Không có dữ liệu mô phỏng để tạo câu hỏi. Vui lòng chạy thuật toán trước.";
               return;
           }
-          
-          const validSteps = traceData.filter(s => s.type === "SELECT" || s.type === "BACKTRACK" || s.type === "SAVE");
-          
-          if (validSteps.length === 0) {
-              quizQuestion.innerText = "Không tìm thấy bước quan trọng nào để đặt câu hỏi.";
-              return;
-          }
-          
-          const step = validSteps[Math.floor(Math.random() * validSteps.length)];
           
           quizFeedback.style.display = "none";
           quizOptions.innerHTML = "";
 
-          if (step.type === "SELECT") {
-              quizQuestion.innerText = `[Trích xuất từ bước ${traceData.indexOf(step) + 1}] Tại vị trí ${step.stack.length}, phần tử ${step.x[step.stack.length-1]} vừa được chọn. Bước tiếp theo của thuật toán là gì?`;
-              createOptions(["Gọi đệ quy tiếp", "Lưu kết quả", "Quay lui"], "Gọi đệ quy tiếp", "Đúng rồi! Thuật toán sẽ gọi thu(i+1).");
-          } else if (step.type === "BACKTRACK") {
-              quizQuestion.innerText = `[Trích xuất từ bước ${traceData.indexOf(step) + 1}] Hành động quay lui đang diễn ra. Điều gì xảy ra với mảng used?`;
-              createOptions(["Đánh dấu True", "Bỏ đánh dấu False", "Không đổi"], "Bỏ đánh dấu False", "Đúng rồi! Phải bỏ đánh dấu để nhánh khác dùng lại phần tử này.");
-          } else if (step.type === "SAVE") {
-              quizQuestion.innerText = `[Trích xuất từ bước ${traceData.indexOf(step) + 1}] Đã tìm thấy một nghiệm đầy đủ! Chương trình sẽ làm gì tiếp theo?`;
-              createOptions(["Dừng chương trình", "Quay lui tìm nghiệm mới", "Xóa mảng x"], "Quay lui tìm nghiệm mới", "Đúng rồi! Thuật toán sẽ quay lui để thử các nhánh khác.");
-          }
-      }
+          // Chọn ngẫu nhiên 1 bước trong trace
+          const stepIndex = Math.floor(Math.random() * traceData.length);
+          const step = traceData[stepIndex];
+          
+          // Danh sách các "khuôn mẫu" câu hỏi động
+          const templates = [
+              // Mẫu 1: Kiểm tra mảng x
+              () => {
+                  let xStr = "[" + step.x.map(v => v === 0 ? "_" : v).join(", ") + "]";
+                  let correct = xStr;
+                  let wrong1 = "[" + step.x.map(v => v === 0 ? "_" : (v === 1 ? 2 : 1)).join(", ") + "]";
+                  let wrong2 = "[1, 2, 3]";
+                  let wrong3 = "[" + step.x.map(() => "_").join(", ") + "]";
+                  let opts = [correct, wrong1, wrong2, wrong3];
+                  return {
+                      q: `[Trích xuất Bước ${stepIndex + 1}] Quan sát Visualizer. Mảng x hiện tại đang chứa những giá trị nào?`,
+                      opts: [...new Set(opts)].sort(() => Math.random() - 0.5),
+                      correct: correct,
+                      explain: "Mảng x lưu trữ chỉnh hợp đang được xây dựng dở. Dấu '_' nghĩa là vị trí đó chưa được điền."
+                  };
+              },
+              // Mẫu 2: Kiểm tra mảng used
+              () => {
+                  let trueIndices = [];
+                  step.used.forEach((val, idx) => { if(val) trueIndices.push(idx + 1); });
+                  let correct = trueIndices.length > 0 ? trueIndices.join(", ") : "Chưa có phần tử nào";
+                  let opts = [correct, "Tất cả các phần tử từ 1 đến n", "Chưa có phần tử nào", "Chỉ có phần tử 1"];
+                  return {
+                      q: `[Trích xuất Bước ${stepIndex + 1}] Dựa vào mảng used, những số nào ĐÃ ĐƯỢC SỬ DỤNG (đánh dấu T)?`,
+                      opts: [...new Set(opts)].sort(() => Math.random() - 0.5),
+                      correct: correct,
+                      explain: "Mảng used đánh dấu T (True) cho các phần tử đã nằm trong mảng x, không thể chọn lại."
+                  };
+              },
+              // Mẫu 3: Độ sâu Call Stack
+              () => {
+                  let depth = step.stack.length;
+                  let correct = depth.toString();
+                  let opts = [correct, (depth+1).toString(), (Math.max(0, depth-1)).toString(), "0"];
+                  return {
+                      q: `[Trích xuất Bước ${stepIndex + 1}] Ngăn xếp lời gọi (Call Stack) hiện tại đang có độ sâu là bao nhiêu?`,
+                      opts: [...new Set(opts)].sort(() => Math.random() - 0.5),
+                      correct: correct,
+                      explain: "Độ sâu của Call Stack bằng số lượng lời gọi hàm thu(i) đang chờ xử lý."
+                  };
+              },
+              // Mẫu 4: Dòng mã giả
+              () => {
+                  let correct = `Dòng ${step.pseudo_line}`;
+                  let opts = [correct, `Dòng ${(step.pseudo_line % 8) + 1}`, `Dòng ${(step.pseudo_line - 1 === 0 ? 8 : step.pseudo_line - 1)}`, "Dòng 1"];
+                  return {
+                      q: `[Trích xuất Bước ${stepIndex + 1}] Tại bước này, mã giả đang thực thi dòng số mấy?`,
+                      opts: [...new Set(opts)].sort(() => Math.random() - 0.5),
+                      correct: correct,
+                      explain: `Hành động "${step.type}" tương ứng với dòng mã giả số ${step.pseudo_line}.`
+                  };
+              },
+              // Mẫu 5: Tư duy Quay lui
+              () => {
+                  if (step.type !== "BACKTRACK" && step.type !== "SAVE") return null; // Chỉ hỏi khi phù hợp
+                  let correct = step.type === "BACKTRACK" ? "Bỏ đánh dấu used[j] = False" : "Lưu kết quả và quay lui";
+                  let opts = [correct, "Tăng k lên 1", "Đánh dấu used[j] = True", "Xóa toàn bộ mảng x"];
+                  return {
+                      q: `[Trích xuất Bước ${stepIndex + 1}] Điều gì xảy ra ngay SAU KHI thuật toán thực hiện hành động này?`,
+                      opts: [...new Set(opts)].sort(() => Math.random() - 0.5),
+                      correct: correct,
+                      explain: "Quay lui trả lại trạng thái tự do cho phần tử j để nhánh khác có thể sử dụng."
+                  };
+              },
+              // Mẫu 6: Dự đoán hành động
+              () => {
+                  if (step.type !== "SELECT") return null;
+                  let correct = "Gọi đệ quy thu(i+1)";
+                  let opts = [correct, "Dừng chương trình", "Quay lui ngay lập tức", "Xóa mảng used"];
+                  return {
+                      q: `[Trích xuất Bước ${stepIndex + 1}] Vừa chọn xong phần tử cho vị trí hiện tại. Bước tiếp theo của thuật toán là gì?`,
+                      opts: [...new Set(opts)].sort(() => Math.random() - 0.5),
+                      correct: correct,
+                      explain: "Sau khi chọn xong (dòng 6), thuật toán sẽ gọi đệ quy để điền tiếp vị trí i+1 (dòng 7)."
+                  };
+              }
+          ];
 
-      function createOptions(opts, correct, feedback) {
-          opts.forEach(opt => {
+          // Lấy tất cả các mẫu hợp lệ với bước hiện tại
+          let validQuizData = [];
+          templates.forEach(fn => {
+              let data = fn();
+              if (data !== null) {
+                  validQuizData.push(data);
+              }
+          });
+
+          if (validQuizData.length === 0) {
+              quizQuestion.innerText = "Không tìm thấy câu hỏi phù hợp cho bước này. Hãy thử lại!";
+              return;
+          }
+          
+          // Chọn ngẫu nhiên 1 mẫu hợp lệ
+          const quizData = validQuizData[Math.floor(Math.random() * validQuizData.length)];
+
+          // Hiển thị câu hỏi
+          quizQuestion.innerText = quizData.q;
+          
+          // Tạo các nút lựa chọn
+          quizData.opts.forEach(opt => {
               const div = document.createElement("div");
               div.className = "quiz-option";
               div.innerText = opt;
               div.onclick = () => {
-                  if (opt === correct) {
-                      quizFeedback.innerText = "✅ " + feedback;
+                  // Xóa các class highlight cũ
+                  document.querySelectorAll('.quiz-option').forEach(el => {
+                      el.style.background = "";
+                      el.style.borderColor = "";
+                      el.style.fontWeight = "normal";
+                  });
+
+                  if (opt === quizData.correct) {
+                      quizFeedback.innerHTML = `✅ <b>Chính xác!</b> ${quizData.explain}`;
                       quizFeedback.style.color = "var(--success-color)";
+                      div.style.background = "rgba(16, 185, 129, 0.15)"; // Xanh lá
+                      div.style.borderColor = "var(--success-color)";
+                      div.style.fontWeight = "bold";
                   } else {
-                      quizFeedback.innerText = "❌ Sai rồi. Hãy xem lại lý thuyết thuật toán!";
+                      quizFeedback.innerHTML = `❌ <b>Sai rồi!</b> Đáp án đúng là: <b>${quizData.correct}</b>.<br><span style="font-weight: normal; color: var(--text-main);">${quizData.explain}</span>`;
                       quizFeedback.style.color = "var(--danger-color)";
+                      div.style.background = "rgba(239, 68, 68, 0.15)"; // Đỏ
+                      div.style.borderColor = "var(--danger-color)";
+                      
+                      // Highlight đáp án đúng
+                      document.querySelectorAll('.quiz-option').forEach(el => {
+                          if (el.innerText === quizData.correct) {
+                              el.style.background = "rgba(16, 185, 129, 0.15)";
+                              el.style.borderColor = "var(--success-color)";
+                              el.style.fontWeight = "bold";
+                          }
+                      });
                   }
                   quizFeedback.style.display = "block";
               };

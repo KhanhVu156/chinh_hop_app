@@ -230,8 +230,10 @@ def api_verify():
     try:
         n = int(request.args.get('n', 0))
         k = int(request.args.get('k', 0))
+        
+        # Giữ nguyên giới hạn n <= 8 để bảo vệ RAM khi đối chiếu itertools
         if n < 0 or n > 8 or k < 0 or k > n:
-            return jsonify({"error": "Tham số không hợp lệ"}), 400
+            return jsonify({"error": "Tính năng kiểm tra tự động chỉ hỗ trợ n <= 8 để tránh tràn RAM server."}), 400
             
         results = kiem_tra_tinh_dung(n, k)
         all_passed = all(r["status"] for r in results)

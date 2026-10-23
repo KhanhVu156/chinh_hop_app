@@ -231,9 +231,9 @@ def api_verify():
         n = int(request.args.get('n', 0))
         k = int(request.args.get('k', 0))
         
-        # Mở khóa giới hạn lên n <= 10 (Thuật toán Streaming đã tối ưu RAM)
-        if n < 0 or n > 10 or k < 0 or k > n:
-            return jsonify({"error": "Tính năng kiểm tra tự động hỗ trợ tối đa n <= 10 để đảm bảo thời gian phản hồi."}), 400
+        # QUAY LẠI GIỚI HẠN n <= 8 ĐỂ TRÁNH TIMEOUT TRÊN RENDER FREE
+        if n < 0 or n > 8 or k < 0 or k > n:
+            return jsonify({"error": "Tính năng kiểm tra tự động chỉ hỗ trợ n <= 8 để đảm bảo không bị Timeout."}), 400
             
         results = kiem_tra_tinh_dung(n, k)
         all_passed = all(r["status"] for r in results)

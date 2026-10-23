@@ -157,7 +157,7 @@
         {% endif %} 
         
         <!-- NÚT KIỂM TRA TÍNH ĐÚNG -->
-        {% if n <= 10 %}
+        {% if n <= 8 %}
         <div class="result-box mt-20" style="text-align: center;">
             <button id="btn-verify" class="btn-control btn-primary" style="width: 100%; height: 45px; margin-bottom: 10px;">Chạy kiểm tra tính đúng</button>
             <div id="verify-results" style="display: none; text-align: left; font-size: 13px; background: var(--bg-panel); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
@@ -166,7 +166,7 @@
         </div>
         {% else %}
         <div class="result-box mt-20" style="text-align: center; color: var(--text-muted); font-size: 13px; font-style: italic;">
-            Tính năng kiểm tra tính đúng tự động tạm khóa với n > 10 để đảm bảo thời gian phản hồi của server.
+            Tính năng kiểm tra tính đúng tự động tạm khóa với n > 8 để đảm bảo thời gian phản hồi của server Render.
         </div>
         {% endif %}
         

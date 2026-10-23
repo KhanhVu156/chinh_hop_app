@@ -256,10 +256,15 @@ body {
     overflow-y: auto;
 }
 
+/* Thanh cuộn đồng bộ cho tất cả các panel */
+.config-panel::-webkit-scrollbar,
+.log-container::-webkit-scrollbar,
 .visual-panel::-webkit-scrollbar {
     width: 6px;
 }
 
+.config-panel::-webkit-scrollbar-thumb,
+.log-container::-webkit-scrollbar-thumb,
 .visual-panel::-webkit-scrollbar-thumb {
     background: var(--border-color);
     border-radius: 4px;
@@ -409,7 +414,8 @@ body {
     justify-content: center;
     align-items: center;
     width: 100%;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
+    /* Tự động rớt dòng nếu màn hình hẹp */
 }
 
 .btn-control {
@@ -471,20 +477,15 @@ body {
     justify-content: center;
     width: 100%;
     min-height: 40px;
-    /* Chiều cao tối thiểu */
     height: auto;
-    /* Tự động giãn chiều cao nếu text dài */
     margin-top: 15px;
     text-decoration: none;
     font-size: 13px;
-    /* Giảm nhẹ font size để vừa vặn hơn */
     white-space: normal;
-    /* Cho phép xuống dòng */
     line-height: 1.3;
     text-align: center;
     padding: 8px 10px;
     word-wrap: break-word;
-    /* Tự động ngắt từ nếu quá dài */
 }
 
 .speed-control {
@@ -530,7 +531,6 @@ body {
 
 .quiz-content {
     min-height: 150px;
-    /* Đảm bảo khung không bị sụp khi chưa có câu hỏi */
 }
 
 .quiz-footer {
@@ -781,7 +781,6 @@ html.dark-mode .icon-moon {
     height: 26px;
 }
 
-/* Ẩn checkbox mặc định */
 .theme-switch input {
     opacity: 0;
     width: 0;
@@ -801,7 +800,6 @@ html.dark-mode .icon-moon {
     border: 1px solid var(--border-color);
 }
 
-/* Nút tròn bên trong */
 .slider:before {
     position: absolute;
     content: "";
@@ -815,12 +813,31 @@ html.dark-mode .icon-moon {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Khi được tích (Dark Mode) */
 input:checked+.slider {
     background-color: var(--primary-color);
 }
 
-/* Nút tròn trượt sang phải */
 input:checked+.slider:before {
     transform: translateX(24px);
+}
+
+/* ==============================================================================
+   RESPONSIVE (TỰ ĐỘNG THÍCH ỨNG MÀN HÌNH)
+   ============================================================================== */
+@media (max-width: 1200px) {
+    .main-layout {
+        grid-template-columns: 1fr;
+        /* Xếp dọc các cột trên màn hình vừa và nhỏ */
+        height: auto;
+        /* Bỏ chiều cao cố định để trang tự giãn */
+    }
+
+    .panel {
+        height: 600px;
+        /* Giới hạn chiều cao cho từng panel trên mobile để không bị dài quá */
+    }
+
+    .quiz-section-wrapper {
+        padding-bottom: 20px;
+    }
 }

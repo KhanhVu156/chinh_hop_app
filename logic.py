@@ -277,44 +277,63 @@ def do_hieu_qua(n, k, rang_buoc=None):
     }
 
 # ==============================================================================
-# KIỂM TRA TÍNH ĐÚNG ĐẮN (VALIDATION)
+# KIỂM TRA TÍNH ĐÚNG ĐẮN (VALIDATION) - TỐI ƯU RAM & TỐC ĐỘ
 # ==============================================================================
 def kiem_tra_tinh_dung(n, k):
     """Chạy các bài kiểm tra tự động để chứng minh tính đúng của thuật toán."""
     results = []
-    try:
-        ket_qua = liet_ke_chinh_hop(n, k)
-    except Exception as e:
-        return [{"name": "Chạy thuật toán", "status": False, "msg": str(e)}]
-        
-    # 1. Kiểm tra số lượng so với A(n,k)
-    so_luong_thuc_te = len(ket_qua)
-    so_luong_ly_thuyet = so_chinh_hop(n, k)
-    results.append({
-        "name": f"Số lượng nghiệm khớp A(n,k) (Thực tế: {so_luong_thuc_te} / Lý thuyết: {so_luong_ly_thuyet})", 
-        "status": so_luong_thuc_te == so_luong_ly_thuyet
-    })
     
-    # 2. Kiểm tra cấu trúc nghiệm
-    valid_length = all(len(day) == k for day in ket_qua)
-    unique_in_perm = all(len(set(day)) == k for day in ket_qua)
-    in_range = all(all(1 <= x <= n for x in day) for day in ket_qua)
+    if k < 0 or k > n:
+        return [{"name": "Tham số không hợp lệ", "status": False}]
+
+    if k == 0:
+        c = list(sinh_ke_tiep_chinh_hop_generator(n, k))
+        s = list(itertools.permutations(range(1, n+1), k))
+        results.append({"name": "Trường hợp biên k=0 trả về [[]]", "status": c == [[]]})
+        results.append({"name": "Đối chiếu chéo với thư viện chuẩn itertools", "status": c == [list(x) for x in s]})
+        return results
+
+    so_luong_ly_thuyet = so_chinh_hop(n, k)
+    
+    custom_gen = sinh_ke_tiep_chinh_hop_generator(n, k)
+    standard_gen = itertools.permutations(range(1, n+1), k)
+    
+    count = 0
+    valid_length = True
+    unique_in_perm = True
+    in_range = True
+    match_itertools = True
+    
+    try:
+        # So sánh song song 2 generator (tiết kiệm RAM cực đại, không lưu list)
+        for custom_item, std_item in itertools.zip_longest(custom_gen, standard_gen):
+            if custom_item is None or std_item is None:
+                match_itertools = False
+                break
+                
+            count += 1
+            
+            if len(custom_item) != k: valid_length = False
+            if len(set(custom_item)) != k: unique_in_perm = False
+            if not all(1 <= x <= n for x in custom_item): in_range = False
+            
+            if tuple(custom_item) != std_item:
+                match_itertools = False
+                break
+    except Exception as e:
+        return [{"name": "Lỗi khi chạy kiểm tra", "status": False, "msg": str(e)}]
+        
+    results.append({
+        "name": f"Số lượng nghiệm khớp A(n,k) (Thực tế: {count} / Lý thuyết: {so_luong_ly_thuyet})", 
+        "status": count == so_luong_ly_thuyet and match_itertools
+    })
     
     results.append({"name": "Mỗi nghiệm có đúng k phần tử", "status": valid_length})
     results.append({"name": "Các phần tử trong 1 nghiệm không lặp lại", "status": unique_in_perm})
     results.append({"name": "Các phần tử đều thuộc khoảng [1, n]", "status": in_range})
     
-    # 3. Kiểm tra trùng lặp danh sách
-    unique_list = len(set(tuple(x) for x in ket_qua)) == so_luong_thuc_te
-    results.append({"name": "Danh sách không có 2 nghiệm trùng nhau", "status": unique_list})
+    # Vì đã so sánh trực tiếp với itertools từng phần tử, nên mặc định không trùng lặp
+    results.append({"name": "Danh sách không có 2 nghiệm trùng nhau", "status": match_itertools})
+    results.append({"name": "Đối chiếu chéo với thư viện chuẩn itertools", "status": match_itertools})
     
-    # 4. Đối chiếu với thư viện chuẩn itertools.permutations
-    if k > 0:
-        it_kq = [list(p) for p in itertools.permutations(range(1, n+1), k)]
-        ket_qua_sorted = sorted([tuple(x) for x in ket_qua])
-        it_kq_sorted = sorted([tuple(x) for x in it_kq])
-        results.append({"name": "Đối chiếu chéo với thư viện chuẩn itertools", "status": ket_qua_sorted == it_kq_sorted})
-    else:
-        results.append({"name": "Trường hợp biên k=0 trả về [[]]", "status": ket_qua == [[]]})
-        
     return results

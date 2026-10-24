@@ -239,40 +239,44 @@ def api_export():
     try:
         n = int(request.args.get('n', 0))
         k = int(request.args.get('k', 0))
+        co_rang_buoc = request.args.get('co_rang_buoc') == '1'
         
-        # Kiểm tra đầu vào cơ bản
         if n < 0 or k < 0 or k > n:
             return jsonify({"error": "Tham số không hợp lệ."}), 400
             
-        # Tư duy: Giới hạn theo tổng số dòng (theo gợi ý của Thầy)
-        # 2.000.000 dòng tương đương ~50MB file, thời gian stream ~10-15s. An toàn cho Server.
         MAX_ROWS = 2000000
-        so_luong = so_chinh_hop(n, k)
         
+        # Lấy dữ liệu tương ứng với ràng buộc
+        if co_rang_buoc:
+            rang_buoc = {'not_first': 1, 'not_adjacent': (2, 3)}
+            full_res, _ = liet_ke_cat_nhanh(n, k, rang_buoc)
+            so_luong = len(full_res)
+            chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+            data_source = ([chars[v-1] for v in day] for day in full_res)
+        else:
+            so_luong = so_chinh_hop(n, k)
+            data_source = sinh_ke_tiep_chinh_hop_generator(n, k)
+
         if so_luong > MAX_ROWS:
             return jsonify({
                 "error": f"File quá lớn ({so_luong} dòng). Để đảm bảo an toàn cho Server, hệ thống chỉ cho phép tải tối đa {MAX_ROWS} dòng. Vui lòng giảm n hoặc k."
             }), 400
             
         def generate_csv():
-            # Tạo bộ đệm
             data = io.StringIO()
-            # Dùng csv.writer để tự động bọc ngoặc kép (nếu có dấu phẩy)
             writer = csv.writer(data)
             
-            # Ghi header
             writer.writerow(['STT', 'Chỉnh hợp'])
             yield '\ufeff' + data.getvalue() # Thêm BOM UTF-8 cho Excel
             data.seek(0)
             data.truncate(0)
             
             count = 1
-            for day in sinh_ke_tiep_chinh_hop_generator(n, k):
+            for day in data_source:
                 day_str = "[" + ", ".join(map(str, day)) + "]"
                 writer.writerow([count, day_str])
                 yield data.getvalue()
                 
-                # Reset bộ đệm cho dòng tiếp theo
                 data.seek(0)
                 data.truncate(0)
                 count += 1

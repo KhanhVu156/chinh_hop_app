@@ -166,7 +166,7 @@
 
           <!-- Nút tải CSV -->
           <div style="margin-top: 15px; text-align: center;">
-            <button type="button" onclick="taiCSV({{ n }}, {{ k }}, {{ so_luong }})" class="btn-control btn-primary btn-export">
+            <button type="button" onclick="taiCSV({{ n }}, {{ k }}, {{ so_luong }}, {{ 'true' if co_rang_buoc else 'false' }})" class="btn-control btn-primary btn-export">
                 Tải xuống CSV (Toàn bộ {{ so_luong }} kết quả)
             </button>
           </div>
@@ -375,8 +375,10 @@
       // --- XỬ LÝ TẢI CSV BẰNG CUSTOM MODAL ---
       let csvDownloadUrl = "";
 
-      function taiCSV(n, k, soLuong) {
-          csvDownloadUrl = `/api/export?n=${n}&k=${k}`;
+      function taiCSV(n, k, soLuong, coRangBuoc) {
+          const crb = coRangBuoc ? '1' : '0';
+          csvDownloadUrl = `/api/export?n=${n}&k=${k}&co_rang_buoc=${crb}`;
+          
           const overlay = document.getElementById('csv-modal-overlay');
           const msg = document.getElementById('csv-modal-msg');
           const title = document.getElementById('csv-modal-title');

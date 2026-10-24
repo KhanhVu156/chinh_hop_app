@@ -16,6 +16,24 @@
             max-height: 220px;
             overflow-y: auto;
         }
+        
+        /* CSS CHO CUSTOM MODAL CẢNH BÁO TẢI CSV */
+        .csv-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.6); z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            backdrop-filter: blur(3px);
+        }
+        .csv-modal-box {
+            background: var(--bg-panel); padding: 25px; border-radius: 8px;
+            max-width: 400px; width: 90%; text-align: center;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px var(--shadow-color);
+        }
+        .csv-modal-title { color: var(--warning-color); margin-bottom: 15px; font-size: 18px; font-weight: bold; }
+        .csv-modal-message { color: var(--text-main); margin-bottom: 25px; line-height: 1.5; font-size: 15px; }
+        .csv-modal-actions { display: flex; gap: 12px; justify-content: center; }
+        .csv-modal-actions .btn-control { min-width: 120px; flex: none; }
     </style>
     <script>
         // Script chống nháy màu khi tải trang (FOUC)
@@ -151,7 +169,6 @@
             <button type="button" onclick="taiCSV({{ n }}, {{ k }}, {{ so_luong }})" class="btn-control btn-primary btn-export">
                 Tải xuống CSV (Toàn bộ {{ so_luong }} kết quả)
             </button>
-            <p id="csv-warning" style="display: none; margin-top: 10px; font-size: 12px; color: var(--warning-color); font-style: italic;"></p>
           </div>
         </div>
         {% endif %} 
@@ -183,7 +200,7 @@
           <!-- THÔNG BÁO KHI TRACE BỊ CẮT -->
           {% if trace_truncated %}
           <div class="warning-box" style="margin-bottom: 15px;">
-            <p class="warning-title"> Hãy chú ý:</p>
+            <p class="warning-title">Hãy chú ý:</p>
             <p class="warning-desc">
               Chương trình đã tính toán chính xác toàn bộ <strong>{{ so_luong }}</strong> kết quả. 
               Tuy nhiên, để đảm bảo tốc độ hiển thị tức thì cho các cặp (n, k) lớn, Visualizer chỉ mô phỏng <strong>1.000 bước</strong> đầu tiên. 
@@ -318,6 +335,18 @@
     </div>
     {% endif %}
 
+    <!-- CUSTOM MODAL CẢNH BÁO TẢI CSV -->
+    <div id="csv-modal-overlay" class="csv-modal-overlay" style="display: none;">
+        <div class="csv-modal-box">
+            <h3 class="csv-modal-title">Cảnh báo tải file lớn</h3>
+            <p class="csv-modal-message" id="csv-modal-msg"></p>
+            <div class="csv-modal-actions">
+                <button type="button" class="btn-control" onclick="closeCSVModal()">Hủy</button>
+                <button type="button" class="btn-control btn-primary" onclick="confirmCSVDownload()">Vẫn tải xuống</button>
+            </div>
+        </div>
+    </div>
+
     <script>
       const traceData = {{ trace_data | tojson | safe }};
       let currentStep = -1;
@@ -342,18 +371,31 @@
       const quizFeedback = document.getElementById("quiz-feedback");
       const btnNewQuiz = document.getElementById("btn-new-quiz");
 
-      // --- HÀM XỬ LÝ TẢI CSV THÔNG MINH ---
+      // --- XỬ LÝ TẢI CSV BẰNG CUSTOM MODAL ---
+      let csvDownloadUrl = "";
+
       function taiCSV(n, k, soLuong) {
-          const warningBox = document.getElementById('csv-warning');
-          
-          // Cảnh báo nếu số lượng > 500.000 kết quả
           if (soLuong > 500000) {
-              const confirmDownload = confirm(`File CSV có ${soLuong.toLocaleString()} dòng. Quá trình tải có thể mất vài giây. Bạn có chắc muốn tải?`);
-              if (!confirmDownload) return;
+              // Lưu URL và hiển thị Modal tùy chỉnh
+              csvDownloadUrl = `/api/export?n=${n}&k=${k}`;
+              document.getElementById('csv-modal-msg').innerText = `File CSV có ${soLuong.toLocaleString()} dòng. Quá trình tải có thể mất vài giây. Bạn có chắc muốn tải?`;
+              document.getElementById('csv-modal-overlay').style.display = 'flex';
+          } else {
+              // Tải trực tiếp nếu file nhỏ
+              window.location.href = `/api/export?n=${n}&k=${k}`;
           }
-          
-          // Tiến hành tải file
-          window.location.href = `/api/export?n=${n}&k=${k}`;
+      }
+
+      function closeCSVModal() {
+          document.getElementById('csv-modal-overlay').style.display = 'none';
+          csvDownloadUrl = "";
+      }
+
+      function confirmCSVDownload() {
+          closeCSVModal();
+          if (csvDownloadUrl) {
+              window.location.href = csvDownloadUrl;
+          }
       }
 
       // --- Cập nhật giới hạn n động theo chế độ & ràng buộc ---

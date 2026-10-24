@@ -240,14 +240,24 @@ def api_export():
         n = int(request.args.get('n', 0))
         k = int(request.args.get('k', 0))
         
-        max_n = 10 
-        if n < 0 or n > max_n or k < 0 or k > n:
-            return jsonify({"error": f"Tham số không hợp lệ. Yêu cầu 0 <= k <= n <= {max_n}"}), 400
+        # Kiểm tra đầu vào cơ bản
+        if n < 0 or k < 0 or k > n:
+            return jsonify({"error": "Tham số không hợp lệ."}), 400
+            
+        # Tư duy: Giới hạn theo tổng số dòng (theo gợi ý của Thầy)
+        # 2.000.000 dòng tương đương ~50MB file, thời gian stream ~10-15s. An toàn cho Server.
+        MAX_ROWS = 2000000
+        so_luong = so_chinh_hop(n, k)
+        
+        if so_luong > MAX_ROWS:
+            return jsonify({
+                "error": f"File quá lớn ({so_luong} dòng). Để đảm bảo an toàn cho Server, hệ thống chỉ cho phép tải tối đa {MAX_ROWS} dòng. Vui lòng giảm n hoặc k."
+            }), 400
             
         def generate_csv():
-            # Khởi tạo bộ đệm
+            # Tạo bộ đệm
             data = io.StringIO()
-            # Sử dụng csv.writer để tự động xử lý ngoặc kép/dấu phẩy
+            # Dùng csv.writer để tự động bọc ngoặc kép (nếu có dấu phẩy)
             writer = csv.writer(data)
             
             # Ghi header

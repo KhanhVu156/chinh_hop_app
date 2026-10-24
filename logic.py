@@ -91,6 +91,7 @@ def sinh_ke_tiep_chinh_hop(n, k):
 def sinh_ke_tiep_chinh_hop_generator(n, k):
     """
     MỞ RỘNG 3: Tối ưu bộ nhớ bằng Generator.
+    Thay vì trả về toàn bộ List, hàm yield từng chỉnh hợp.
     """
     if k == 0:
         yield []
@@ -317,8 +318,9 @@ def kiem_tra_tinh_dung(n, k):
 # ==============================================================================
 def unrank_chinh_hop(n, k, index):
     """
-    Truy xuất trực tiếp chỉnh hợp thứ `index` (tính từ 0) 
-    mà không cần duyệt qua các phần tử trước đó.
+    Tư duy Unranking: Truy xuất trực tiếp chỉnh hợp thứ `index` (tính từ 0)
+    bằng toán học. Thay vì dùng islice phải duyệt qua index phần tử,
+    hàm này dùng phép chia lấy dư để nhảy thẳng đến kết quả.
     """
     if k == 0: return []
     
@@ -367,10 +369,7 @@ def sinh_ke_tiep_tu_cau_hinh(n, k, x):
     return x
 
 def lay_phan_tu_cua_trang(n, k, page, per_page=50):
-    """
-    Lấy chính xác 50 phần tử của trang hiện tại bằng kỹ thuật Unranking.
-    Tốc độ O(1) bất kể là trang 1 hay trang 70.000.
-    """
+    """Lấy 50 phần tử của trang bằng Unranking + Sinh kế tiếp."""
     start_idx = (page - 1) * per_page
     total = so_chinh_hop(n, k)
     if start_idx >= total:

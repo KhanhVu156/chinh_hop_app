@@ -51,7 +51,6 @@
         <h2 class="panel-title">CẤU HÌNH BÀI TOÁN</h2>
         <form method="POST" class="input-form">
           <div class="form-group">
-            <!-- Đã xóa bỏ max và validate của HTML5 để tránh lỗi "ảo" -->
             <label id="label-n">Nhập n (0 ≤ n ≤ 10):</label>
             <input type="number" name="n" value="{{ n if da_chay else '' }}" min="0" required />
           </div>
@@ -149,9 +148,10 @@
 
           <!-- Nút tải CSV -->
           <div style="margin-top: 15px; text-align: center;">
-            <a href="/api/export?n={{ n }}&k={{ k }}" class="btn-control btn-primary btn-export">
+            <button type="button" onclick="taiCSV({{ n }}, {{ k }}, {{ so_luong }})" class="btn-control btn-primary btn-export">
                 Tải xuống CSV (Toàn bộ {{ so_luong }} kết quả)
-            </a>
+            </button>
+            <p id="csv-warning" style="display: none; margin-top: 10px; font-size: 12px; color: var(--warning-color); font-style: italic;"></p>
           </div>
         </div>
         {% endif %} 
@@ -342,6 +342,20 @@
       const quizFeedback = document.getElementById("quiz-feedback");
       const btnNewQuiz = document.getElementById("btn-new-quiz");
 
+      // --- HÀM XỬ LÝ TẢI CSV THÔNG MINH ---
+      function taiCSV(n, k, soLuong) {
+          const warningBox = document.getElementById('csv-warning');
+          
+          // Cảnh báo nếu số lượng > 500.000 kết quả
+          if (soLuong > 500000) {
+              const confirmDownload = confirm(`File CSV có ${soLuong.toLocaleString()} dòng. Quá trình tải có thể mất vài giây. Bạn có chắc muốn tải?`);
+              if (!confirmDownload) return;
+          }
+          
+          // Tiến hành tải file
+          window.location.href = `/api/export?n=${n}&k=${k}`;
+      }
+
       // --- Cập nhật giới hạn n động theo chế độ & ràng buộc ---
       const nInput = document.querySelector('input[name="n"]');
       const cheDoSelect = document.querySelector('select[name="che_do"]');
@@ -358,7 +372,6 @@
           } else if (cheDoSelect && cheDoSelect.value === 'hoc') {
               maxN = 11;
           }
-          // Chỉ cập nhật Label để hiển thị cho người dùng. Backend sẽ là nơi kiểm tra hợp lệ cuối cùng để tránh lỗi HTML5.
           labelN.innerText = `Nhập n (0 ≤ n ≤ ${maxN}):`;
       }
 

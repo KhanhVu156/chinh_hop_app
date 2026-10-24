@@ -338,11 +338,12 @@
     <!-- CUSTOM MODAL CẢNH BÁO TẢI CSV -->
     <div id="csv-modal-overlay" class="csv-modal-overlay" style="display: none;">
         <div class="csv-modal-box">
-            <h3 class="csv-modal-title">Cảnh báo tải file lớn</h3>
+            <h3 class="csv-modal-title" id="csv-modal-title">Cảnh báo tải file lớn</h3>
             <p class="csv-modal-message" id="csv-modal-msg"></p>
             <div class="csv-modal-actions">
-                <button type="button" class="btn-control" onclick="closeCSVModal()">Hủy</button>
-                <button type="button" class="btn-control btn-primary" onclick="confirmCSVDownload()">Vẫn tải xuống</button>
+                <button type="button" class="btn-control" onclick="closeCSVModal()">Đóng</button>
+                <!-- Nút tải sẽ được ẩn/hiện bằng JS -->
+                <button type="button" id="btn-confirm-csv" class="btn-control btn-primary" onclick="confirmCSVDownload()">Vẫn tải xuống</button>
             </div>
         </div>
     </div>
@@ -375,14 +376,29 @@
       let csvDownloadUrl = "";
 
       function taiCSV(n, k, soLuong) {
-          if (soLuong > 500000) {
-              // Lưu URL và hiển thị Modal tùy chỉnh
-              csvDownloadUrl = `/api/export?n=${n}&k=${k}`;
-              document.getElementById('csv-modal-msg').innerText = `File CSV có ${soLuong.toLocaleString()} dòng. Quá trình tải có thể mất vài giây. Bạn có chắc muốn tải?`;
-              document.getElementById('csv-modal-overlay').style.display = 'flex';
+          csvDownloadUrl = `/api/export?n=${n}&k=${k}`;
+          const overlay = document.getElementById('csv-modal-overlay');
+          const msg = document.getElementById('csv-modal-msg');
+          const title = document.getElementById('csv-modal-title');
+          const btnConfirm = document.getElementById('btn-confirm-csv');
+          
+          if (soLuong > 2000000) {
+              // Quá giới hạn backend -> Báo lỗi không cho tải
+              title.innerText = "Vượt quá giới hạn Server";
+              title.style.color = "var(--danger-color)";
+              msg.innerHTML = `File CSV có <b>${soLuong.toLocaleString()}</b> dòng, vượt quá giới hạn 2.000.000 dòng để bảo vệ bộ nhớ Server. <br><br>Vui lòng chọn cặp (n, k) nhỏ hơn để xuất file.`;
+              btnConfirm.style.display = 'none'; // Ẩn nút tải
+              overlay.style.display = 'flex';
+          } else if (soLuong > 500000) {
+              // Cảnh báo tải chậm
+              title.innerText = "Cảnh báo tải file lớn";
+              title.style.color = "var(--warning-color)";
+              msg.innerHTML = `File CSV có <b>${soLuong.toLocaleString()}</b> dòng. Quá trình tải có thể mất vài giây. Bạn có chắc muốn tải?`;
+              btnConfirm.style.display = 'inline-block'; // Hiện nút tải
+              overlay.style.display = 'flex';
           } else {
               // Tải trực tiếp nếu file nhỏ
-              window.location.href = `/api/export?n=${n}&k=${k}`;
+              window.location.href = csvDownloadUrl;
           }
       }
 

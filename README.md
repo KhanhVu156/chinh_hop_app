@@ -1,10 +1,4 @@
-﻿Đã rõ. Tui đã đọc kỹ lại giáo trình `INT1306` (đặc biệt là Chương 3) và các yêu cầu chấm điểm trong file hướng dẫn để chỉnh sửa lại 5 mục bắt buộc cho chuẩn xác với quy định của thầy. Đồng thời, tui đã **bỏ cụm từ "Bản Big Update này"** ở phần Tính năng nổi bật theo đúng yêu cầu của ông. Toàn bộ phần phía dưới vẫn giữ nguyên.
-
-Dưới đây là file `README.md` hoàn chỉnh (copy trực tiếp, không nằm trong code block):
-
----
-
-# 🎯 Chinh Hop Visualizer App (DT035)
+﻿# 🎯 Chinh Hop Visualizer App (DT035)
 
 > **Đồ án môn học Cấu trúc Dữ liệu và Giải thuật (INT13185)**  
 > Học viện Công nghệ Bưu chính Viễn thông (PTIT)  

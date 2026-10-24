@@ -1,4 +1,10 @@
-﻿# 🎯 Chinh Hop Visualizer App (DT035)
+﻿Đã rõ. Tui đã đọc kỹ lại giáo trình `INT1306` (đặc biệt là Chương 3) và các yêu cầu chấm điểm trong file hướng dẫn để chỉnh sửa lại 5 mục bắt buộc cho chuẩn xác với quy định của thầy. Đồng thời, tui đã **bỏ cụm từ "Bản Big Update này"** ở phần Tính năng nổi bật theo đúng yêu cầu của ông. Toàn bộ phần phía dưới vẫn giữ nguyên.
+
+Dưới đây là file `README.md` hoàn chỉnh (copy trực tiếp, không nằm trong code block):
+
+---
+
+# 🎯 Chinh Hop Visualizer App (DT035)
 
 > **Đồ án môn học Cấu trúc Dữ liệu và Giải thuật (INT13185)**  
 > Học viện Công nghệ Bưu chính Viễn thông (PTIT)  
@@ -11,15 +17,60 @@
 
 ---
 
+## 📑 THÔNG TIN ĐỒ ÁN & HƯỚNG DẪN ĐỐI CHIẾU (Theo Rubric)
+
+### 1. Nhận diện
+
+- **Họ và tên:** Vũ Duy Khánh
+- **MSSV:** N24DCDT039
+- **Lớp:** D24CQDT01-N
+- **Mã đề:** DT035
+- **Tên đề:** Liệt kê chỉnh hợp không lặp chập k của n phần tử
+- **Đường dẫn phiếu:** `05_Minh_chung_cu_the_91_de_tai.docx` (Mục DT035)
+- **Căn cứ giáo trình:** Chương 3, Bài tập chương 3, câu 22; vận dụng mục 3.2 (Thuật toán sinh kế tiếp) và 3.3 (Liệt kê bằng đệ quy); trang in 64, 71–72, 86; trang PDF 76, 83–84, 98.
+
+### 2. Môi trường
+
+- **Ngôn ngữ:** Python 3.11
+- **Thư viện sử dụng:** `Flask==3.0.0` (Web Server), `pytest==7.4.0` (Kiểm thử), `gunicorn==21.2.0` (Triển khai). Thuật toán lõi không sử dụng thư viện ngoài.
+- **Lệnh cài đặt:** `pip install -r requirements.txt`
+
+### 3. Lệnh
+
+- **Chạy Ví dụ 1 (n=3, k=2):**
+  `python -c "from logic import liet_ke_chinh_hop; print(liet_ke_chinh_hop(3, 2))"`
+- **Chạy Ví dụ 2 (n=2, k=2):**
+  `python -c "from logic import liet_ke_chinh_hop; print(liet_ke_chinh_hop(2, 2))"`
+- **Lệnh nhập dữ liệu mới (Giao diện Web):**
+  `python app.py` (Truy cập `http://localhost:5000` để nhập n, k tùy ý).
+- **Lệnh chạy toàn bộ kiểm thử:**
+  `pytest test_logic.py -v`
+
+### 4. Quy ước
+
+- **Input:** Hai số nguyên `n`, `k` thỏa mãn `0 <= k <= n`. (Theo phiếu giới hạn `n <= 8`, hệ thống mở rộng giới hạn `n` động từ 8 đến 12 tùy chế độ để bảo vệ RAM).
+- **Thứ tự chỉ số:** Thuật toán lõi sử dụng chỉ số **1-based** (bắt đầu từ 1) để đồng bộ với giả mã trong giáo trình. Mảng `x` kích thước `k+1`, mảng `used` kích thước `n+1`.
+- **Output:** Danh sách các mảng chỉnh hợp (VD: `[[1, 2], [1, 3]...]`), sắp xếp theo đúng thứ tự từ điển. Với trường hợp biên `k=0`, trả về danh sách chứa mảng rỗng `[[]]`.
+- **Xử lý lỗi:** Nếu nhập `n < 0`, `k < 0`, `k > n` hoặc nhập chữ cái, Validator sẽ chặn không chạy thuật toán và hiển thị thông báo lỗi màu đỏ trên giao diện (VD: *"Vui lòng nhập k thỏa mãn 0 <= k <= n"*).
+
+### 5. Minh chứng
+
+- **Thư mục ảnh:** `docs/anh_ket_qua/` (Chứa đủ 11 ảnh minh chứng từ A01 đến A11).
+- **Mã ca kiểm thử & Kết quả:** Chi tiết tại Chương 4 (Bảng 4.1, 4.2) trong file `BaoCao.docx`.
+- **SHA chạy C (Commit tạo ra kết quả test):** `[Điền mã SHA C đầy đủ của bạn vào đây]`
+- **SHA nộp S (Commit cuối cùng):** Ghi chú chi tiết trong tệp `ThongTinNop.txt` nộp kèm trên Classroom.
+
+---
+
 ## 📖 Giới thiệu
 
 Ứng dụng web trực quan hóa bài toán **Liệt kê chỉnh hợp không lặp chập k của n phần tử**, được xây dựng bằng Flask. Ứng dụng không chỉ dừng ở việc hiển thị kết quả mà còn mô phỏng **từng bước chạy của thuật toán đệ quy quay lui (Backtracking)** thông qua hệ thống trace chi tiết.
 
-Bản Big Update này tích hợp thêm **Kỹ thuật Unranking (Phân trang O(1))**, **Xuất dữ liệu CSV không tốn RAM có áp dụng ràng buộc**, **Gia sư ảo (Quiz Động)** tự tạo câu hỏi từ dữ liệu thực tế, cùng khả năng **tối ưu bộ nhớ bằng Generator** để xử lý các cặp `(n, k)` lớn (lên đến `n=11, 12`) trên môi trường server yếu (Render Free 512MB).
+Ứng dụng tích hợp thêm **Kỹ thuật Unranking (Phân trang O(1))**, **Xuất dữ liệu CSV không tốn RAM có áp dụng ràng buộc**, **Gia sư ảo (Quiz Động)** tự tạo câu hỏi từ dữ liệu thực tế, cùng khả năng **tối ưu bộ nhớ bằng Generator** để xử lý các cặp `(n, k)` lớn (lên đến `n=11, 12`) trên môi trường server yếu (Render Free 512MB).
 
 ---
 
-## 🚀 Tính năng nổi bật (Big Update)
+## 🚀 Tính năng nổi bật
 
 ### 1. Tối ưu hóa thuật toán lõi
 

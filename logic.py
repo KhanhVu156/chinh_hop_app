@@ -53,12 +53,6 @@ def liet_ke_chinh_hop(n, k, elements=None):
 def sinh_ke_tiep_chinh_hop(n, k):
     """
     Phần tự chọn: Sinh chỉnh hợp bằng phương pháp Sinh kế tiếp (không đệ quy).
-    Tư duy: 
-    1. Khởi tạo x = [1, 2, ..., k].
-    2. Tìm vị trí i bên phải nhất có thể thay đổi. Tại i, tìm giá trị v > x[i] 
-       nhỏ nhất mà v chưa xuất hiện trong tiền tố x[0...i-1].
-    3. Gán x[i] = v.
-    4. Đặt các phần tử phía sau x[i] thành các số nhỏ nhất có thể chưa xuất hiện.
     """
     if k == 0:
         return [[]]
@@ -97,9 +91,6 @@ def sinh_ke_tiep_chinh_hop(n, k):
 def sinh_ke_tiep_chinh_hop_generator(n, k):
     """
     MỞ RỘNG 3: Tối ưu bộ nhớ bằng Generator.
-    Thay vì trả về toàn bộ List, hàm yield từng chỉnh hợp.
-    Kết hợp với itertools.islice, ta có thể lấy 50 phần tử của 1 trang
-    mà không cần sinh toàn bộ mảng -> tránh tràn RAM với n lớn (n=10, 11).
     """
     if k == 0:
         yield []
@@ -138,13 +129,10 @@ def sinh_ke_tiep_chinh_hop_generator(n, k):
 # HÀM TẠO TRACE CHO VISUALIZER (MÔ PHỎNG)
 # ==============================================================================
 class StopTrace(Exception):
-    """Exception dùng để ngắt toàn bộ đệ quy ngay lập tức khi đủ số bước."""
     pass
 
 def liet_ke_chinh_hop_co_trace(n, k, max_steps=1000): 
-    """Tạo trace mô phỏng từng bước của thuật toán đệ quy."""
     if k < 0 or k > n: return [], []
-    
     x = [0] * (k + 1)
     used = [False] * (n + 1)
     trace = []
@@ -160,7 +148,6 @@ def liet_ke_chinh_hop_co_trace(n, k, max_steps=1000):
                 "pseudo_line": pseudo_line,
                 "message": message
             })
-            # Ngắt ngay lập tức khi đủ số bước yêu cầu
             if len(trace) >= max_steps:
                 raise StopTrace()
 
@@ -191,7 +178,7 @@ def liet_ke_chinh_hop_co_trace(n, k, max_steps=1000):
     try:
         thu_co_trace(1)
     except StopTrace:
-        pass # Kết thúc êm đẹp
+        pass 
 
     return [], trace 
 
@@ -200,7 +187,6 @@ def liet_ke_chinh_hop_co_trace(n, k, max_steps=1000):
 # ==============================================================================
 
 def kiem_tra_rang_buoc(day, rang_buoc):
-    """Kiểm tra một dãy hoàn chỉnh có thỏa mãn ràng buộc không."""
     if not rang_buoc: return True
     if 'not_first' in rang_buoc and len(day) > 0 and day[0] == rang_buoc['not_first']:
         return False
@@ -212,7 +198,6 @@ def kiem_tra_rang_buoc(day, rang_buoc):
     return True
 
 def liet_ke_sinh_roi_loc(n, k, rang_buoc=None):
-    """Phương pháp 1: Sinh tất cả chỉnh hợp, sau đó lọc theo ràng buộc."""
     tat_ca = liet_ke_chinh_hop(n, k)
     if not rang_buoc: return tat_ca, 0
     
@@ -226,7 +211,6 @@ def liet_ke_sinh_roi_loc(n, k, rang_buoc=None):
     return hop_le, so_nhanh_loai
 
 def liet_ke_cat_nhanh(n, k, rang_buoc=None):
-    """Phương pháp 2: Quay lui có cắt nhánh (kiểm tra ràng buộc ngay khi xây dựng)."""
     if k < 0 or k > n: return [], 0
     x = [0] * (k + 1)
     used = [False] * (n + 1)
@@ -242,7 +226,6 @@ def liet_ke_cat_nhanh(n, k, rang_buoc=None):
             if not used[j]:
                 hop_le = True
                 if rang_buoc:
-                    # Tư duy cắt nhánh: Kiểm tra sớm, nếu vi phạm thì dừng nhánh này
                     if i == 1 and 'not_first' in rang_buoc and j == rang_buoc['not_first']:
                         hop_le = False
                     if i > 1 and 'not_adjacent' in rang_buoc:
@@ -261,7 +244,6 @@ def liet_ke_cat_nhanh(n, k, rang_buoc=None):
     return ket_qua, so_nhanh_cat
 
 def do_hieu_qua(n, k, rang_buoc=None):
-    """Đo thời gian và so sánh 2 phương pháp."""
     start1 = time.perf_counter()
     kq1, so_nhanh_loai = liet_ke_sinh_roi_loc(n, k, rang_buoc)
     time1 = (time.perf_counter() - start1) * 1000
@@ -277,12 +259,10 @@ def do_hieu_qua(n, k, rang_buoc=None):
     }
 
 # ==============================================================================
-# KIỂM TRA TÍNH ĐÚNG ĐẮN (VALIDATION) - TỐI ƯU RAM & TỐC ĐỘ
+# KIỂM TRA TÍNH ĐÚNG ĐẮN (VALIDATION)
 # ==============================================================================
 def kiem_tra_tinh_dung(n, k):
-    """Chạy các bài kiểm tra tự động để chứng minh tính đúng của thuật toán."""
     results = []
-    
     if k < 0 or k > n:
         return [{"name": "Tham số không hợp lệ", "status": False}]
 
@@ -294,7 +274,6 @@ def kiem_tra_tinh_dung(n, k):
         return results
 
     so_luong_ly_thuyet = so_chinh_hop(n, k)
-    
     custom_gen = sinh_ke_tiep_chinh_hop_generator(n, k)
     standard_gen = itertools.permutations(range(1, n+1), k)
     
@@ -305,14 +284,12 @@ def kiem_tra_tinh_dung(n, k):
     match_itertools = True
     
     try:
-        # So sánh song song 2 generator (tiết kiệm RAM cực đại, không lưu list)
         for custom_item, std_item in itertools.zip_longest(custom_gen, standard_gen):
             if custom_item is None or std_item is None:
                 match_itertools = False
                 break
                 
             count += 1
-            
             if len(custom_item) != k: valid_length = False
             if len(set(custom_item)) != k: unique_in_perm = False
             if not all(1 <= x <= n for x in custom_item): in_range = False
@@ -327,13 +304,91 @@ def kiem_tra_tinh_dung(n, k):
         "name": f"Số lượng nghiệm khớp A(n,k) (Thực tế: {count} / Lý thuyết: {so_luong_ly_thuyet})", 
         "status": count == so_luong_ly_thuyet and match_itertools
     })
-    
     results.append({"name": "Mỗi nghiệm có đúng k phần tử", "status": valid_length})
     results.append({"name": "Các phần tử trong 1 nghiệm không lặp lại", "status": unique_in_perm})
     results.append({"name": "Các phần tử đều thuộc khoảng [1, n]", "status": in_range})
-    
-    # Vì đã so sánh trực tiếp với itertools từng phần tử, nên mặc định không trùng lặp
     results.append({"name": "Danh sách không có 2 nghiệm trùng nhau", "status": match_itertools})
     results.append({"name": "Đối chiếu chéo với thư viện chuẩn itertools", "status": match_itertools})
     
     return results
+
+# ==============================================================================
+# MỞ RỘNG SIÊU TỐC: KỸ THUẬT UNRANKING (PHÂN TRANG O(1))
+# ==============================================================================
+def unrank_chinh_hop(n, k, index):
+    """
+    Truy xuất trực tiếp chỉnh hợp thứ `index` (tính từ 0) 
+    mà không cần duyệt qua các phần tử trước đó.
+    """
+    if k == 0: return []
+    
+    chua_dung = list(range(1, n + 1))
+    ket_qua = []
+    
+    for i in range(k):
+        # Số lượng chỉnh hợp có thể tạo ra nếu cố định tiền tố hiện tại
+        block_size = so_chinh_hop(n - i - 1, k - i - 1)
+        if block_size == 0:
+            block_size = 1
+            
+        # Xác định xem phần tử thứ i nên là gì dựa vào index
+        chi_so = index // block_size
+        index = index % block_size
+        
+        val = chua_dung.pop(chi_so)
+        ket_qua.append(val)
+        
+    return ket_qua
+
+def sinh_ke_tiep_tu_cau_hinh(n, k, x):
+    """Từ một cấu hình x, sinh ra cấu hình kế tiếp trong thứ tự từ điển."""
+    x = list(x)
+    i = k - 1
+    while i >= 0:
+        found_next = False
+        for v in range(x[i] + 1, n + 1):
+            if v not in x[0:i]:
+                x[i] = v
+                found_next = True
+                break
+        if found_next:
+            break
+        i -= 1
+    
+    if i < 0:
+        return None # Đã là cấu hình cuối cùng
+        
+    for j in range(i + 1, k):
+        val = 1
+        while val in x[0:j]:
+            val += 1
+        x[j] = val
+        
+    return x
+
+def lay_phan_tu_cua_trang(n, k, page, per_page=50):
+    """
+    Lấy chính xác 50 phần tử của trang hiện tại bằng kỹ thuật Unranking.
+    Tốc độ O(1) bất kể là trang 1 hay trang 70.000.
+    """
+    start_idx = (page - 1) * per_page
+    total = so_chinh_hop(n, k)
+    if start_idx >= total:
+        return []
+        
+    # 1. Nhảy thẳng đến phần tử đầu tiên của trang
+    first_item = unrank_chinh_hop(n, k, start_idx)
+    if not first_item:
+        return []
+        
+    result = [first_item]
+    
+    # 2. Sinh tiếp 49 phần tử còn lại
+    current = first_item
+    for _ in range(per_page - 1):
+        current = sinh_ke_tiep_tu_cau_hinh(n, k, current)
+        if current is None:
+            break
+        result.append(current)
+        
+    return result

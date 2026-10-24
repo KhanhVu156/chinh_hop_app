@@ -1,9 +1,12 @@
 from flask import Flask, render_template, request, jsonify, g, Response
 import sqlite3
 import itertools
+import csv
+import io
 from logic import (so_chinh_hop, liet_ke_chinh_hop, sinh_ke_tiep_chinh_hop, 
                    liet_ke_chinh_hop_co_trace, liet_ke_cat_nhanh, do_hieu_qua, 
-                   kiem_tra_tinh_dung, sinh_ke_tiep_chinh_hop_generator)
+                   kiem_tra_tinh_dung, sinh_ke_tiep_chinh_hop_generator,
+                   lay_phan_tu_cua_trang)
 import os
 
 app = Flask(__name__)
@@ -105,20 +108,14 @@ def index():
             if request.method == 'POST':
                 page = 1
 
-            # ------------------------------------------------------------------
-            # MỞ RỘNG 3: Xác định giới hạn n động dựa trên chế độ
-            # - Ràng buộc: sinh toàn bộ mảng -> giới hạn 8 (an toàn RAM)
-            # - Chỉ đếm: chỉ tính công thức -> giới hạn 12
-            # - Học từng bước: trace dừng ở 1000 bước -> giới hạn 11
-            # - Chỉ liệt kê: dùng generator + islice -> giới hạn 10
-            # ------------------------------------------------------------------
+            # Xác định giới hạn n động
             if co_rang_buoc:
                 max_n = 8
             elif che_do == 'dem':
                 max_n = 12
             elif che_do == 'hoc':
                 max_n = 11
-            else:  # liet_ke
+            else:
                 max_n = 10
 
             if n < 0:
@@ -139,36 +136,26 @@ def index():
                     chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                     full_de_quy = [[chars[v-1] for v in day] for day in full_de_quy]
 
-                    # Phân trang cho danh sách đã sinh
                     total_pages = max(1, (len(full_de_quy) + per_page - 1) // per_page)
                     start_idx = (page - 1) * per_page
                     end_idx = start_idx + per_page
                     ket_qua_de_quy = full_de_quy[start_idx:end_idx]
 
                 elif che_do == 'hoc':
-                    # Chế độ học: CHỈ sinh trace, KHÔNG sinh toàn bộ mảng kết quả
                     _, trace_data = liet_ke_chinh_hop_co_trace(n, k, max_steps=1000)
                     ket_qua_de_quy = []
                     total_pages = 1
-                    # Bật cờ thông báo nếu số bước vượt quá 1000
                     if len(trace_data) >= 1000:
                         trace_truncated = True
 
                 elif che_do == 'dem':
-                    # Chế độ đếm: chỉ tính công thức, không sinh mảng
                     ket_qua_de_quy = []
                     total_pages = 1
 
                 else:  # che_do == 'liet_ke'
-                    # MỞ RỘNG 3: Dùng Generator + itertools.islice để tiết kiệm RAM
-                    # islice(gen, start_idx, end_idx) sẽ lặp qua generator đến vị trí
-                    # start_idx, bỏ qua các phần tử trước đó, rồi lấy đúng per_page phần tử.
-                    # Không sinh toàn bộ mảng -> an toàn với n=10.
-                    gen = sinh_ke_tiep_chinh_hop_generator(n, k)
+                    # Sử dụng Unranking: Nhảy trực tiếp đến trang cần xem
                     total_pages = max(1, (so_luong + per_page - 1) // per_page)
-                    start_idx = (page - 1) * per_page
-                    end_idx = start_idx + per_page
-                    ket_qua_de_quy = list(itertools.islice(gen, start_idx, end_idx))
+                    ket_qua_de_quy = lay_phan_tu_cua_trang(n, k, page, per_page)
 
                 if request.method == 'POST':
                     luu_lich_su(n, k, so_luong, co_rang_buoc, che_do)
@@ -231,7 +218,6 @@ def api_verify():
         n = int(request.args.get('n', 0))
         k = int(request.args.get('k', 0))
         
-        # QUAY LẠI GIỚI HẠN n <= 8 ĐỂ TRÁNH TIMEOUT TRÊN RENDER FREE
         if n < 0 or n > 8 or k < 0 or k > n:
             return jsonify({"error": "Tính năng kiểm tra tự động chỉ hỗ trợ n <= 8 để đảm bảo không bị Timeout."}), 400
             
@@ -246,7 +232,7 @@ def api_verify():
         return jsonify({"error": str(e)}), 500
 
 # ==============================================================================
-# MỞ RỘNG 2: XUẤT CSV BẰNG STREAM (KHÔNG LƯU FILE, KHÔNG TỐN RAM)
+# MỞ RỘNG 2: XUẤT CSV BẰNG STREAM (DÙNG CHUẨN csv.writer)
 # ==============================================================================
 @app.route('/api/export', methods=['GET'])
 def api_export():
@@ -254,21 +240,31 @@ def api_export():
         n = int(request.args.get('n', 0))
         k = int(request.args.get('k', 0))
         
-        max_n = 12  # Giới hạn cho phép tải vì cần thời gian stream
+        max_n = 10 
         if n < 0 or n > max_n or k < 0 or k > n:
             return jsonify({"error": f"Tham số không hợp lệ. Yêu cầu 0 <= k <= n <= {max_n}"}), 400
             
         def generate_csv():
-            # BOM để Excel nhận diện đúng UTF-8
-            yield '\ufeff'
-            yield 'STT,Chỉnh hợp\n'
+            # Khởi tạo bộ đệm
+            data = io.StringIO()
+            # Sử dụng csv.writer để tự động xử lý ngoặc kép/dấu phẩy
+            writer = csv.writer(data)
+            
+            # Ghi header
+            writer.writerow(['STT', 'Chỉnh hợp'])
+            yield '\ufeff' + data.getvalue() # Thêm BOM UTF-8 cho Excel
+            data.seek(0)
+            data.truncate(0)
             
             count = 1
-            # Sử dụng Generator để ghi từng dòng, không load vào RAM
             for day in sinh_ke_tiep_chinh_hop_generator(n, k):
-                # Định dạng: [1, 2, 3]
                 day_str = "[" + ", ".join(map(str, day)) + "]"
-                yield f"{count},{day_str}\n"
+                writer.writerow([count, day_str])
+                yield data.getvalue()
+                
+                # Reset bộ đệm cho dòng tiếp theo
+                data.seek(0)
+                data.truncate(0)
                 count += 1
                 
         return Response(

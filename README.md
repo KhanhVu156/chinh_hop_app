@@ -15,40 +15,41 @@
 
 Ứng dụng web trực quan hóa bài toán **Liệt kê chỉnh hợp không lặp chập k của n phần tử**, được xây dựng bằng Flask. Ứng dụng không chỉ dừng ở việc hiển thị kết quả mà còn mô phỏng **từng bước chạy của thuật toán đệ quy quay lui (Backtracking)** thông qua hệ thống trace chi tiết.
 
-Bản Big Update này tích hợp thêm **Xuất dữ liệu CSV không tốn RAM**, **Gia sư ảo (Quiz Động)** tự tạo câu hỏi từ dữ liệu thực tế, cùng khả năng **tối ưu bộ nhớ bằng Generator** để xử lý các cặp `(n, k)` lớn (lên đến `n=10, 11`) trên môi trường server yếu (Render Free 512MB).
+Bản Big Update này tích hợp thêm **Kỹ thuật Unranking (Phân trang O(1))**, **Xuất dữ liệu CSV không tốn RAM có áp dụng ràng buộc**, **Gia sư ảo (Quiz Động)** tự tạo câu hỏi từ dữ liệu thực tế, cùng khả năng **tối ưu bộ nhớ bằng Generator** để xử lý các cặp `(n, k)` lớn (lên đến `n=11, 12`) trên môi trường server yếu (Render Free 512MB).
 
 ---
 
 ## 🚀 Tính năng nổi bật (Big Update)
 
-### 1. Tối ưu hóa thuật toán lõi (Mở rộng 3)
+### 1. Tối ưu hóa thuật toán lõi
 
 - **Đệ quy quay lui (Backtracking)**: Liệt kê chỉnh hợp không lặp chập k.
 - **Sinh kế tiếp (Next Permutation)**: Phương pháp không đệ quy dùng cho chế độ liệt kê hiệu năng cao.
-- **Tối ưu bộ nhớ (Generator)**: Sử dụng `yield` kết hợp `itertools.islice` để phân trang mà không cần sinh toàn bộ mảng, giúp nâng giới hạn `n` lên tới **10** (Liệt kê) và **11** (Học từng bước) mà không lo tràn RAM.
-- **Kỹ thuật cắt nhánh (Branch and Bound)**: Áp dụng khi có ràng buộc, kèm đo hiệu năng so sánh với phương pháp "Sinh rồi lọc".
+- **Kỹ thuật Unranking (Điểm nhấn)**: Thay vì dùng `islice` phải duyệt tuần tự qua hàng triệu phần tử (gây chậm khi xem trang xa), thuật toán Unranking sử dụng toán học để **nhảy thẳng trực tiếp đến trang cần xem** với độ phức tạp **O(1)**. Thời gian tải trang 1 và trang 70.000 đều chỉ mất **< 1ms**.
+- **Kỹ thuật cắt nhánh (Branch and Bound)**: Áp dụng khi có ràng buộc, kèm đo hiệu năng so sánh trực quan với phương pháp "Sinh rồi lọc".
 
 ### 2. Trực quan hóa (Visualizer) & Giới hạn động
 
 - Mô phỏng **từng bước chạy** của thuật toán: `CALL`, `LOOP`, `SELECT`, `SKIP`, `SAVE`, `BACKTRACK`.
 - Hiển thị trực quan: Mảng `x`, mảng `used`, Ngăn xếp lời gọi (Call stack), Mã giả (Pseudo-code) và Nhật ký thực thi.
 - **Điều khiển linh hoạt**: Bước trước / Bước tiếp / Tự động chạy / Đến cuối / Reset. Tốc độ (100ms – 2000ms).
-- ⚠️ **Giới hạn 1000 bước** mô phỏng đầu tiên để đảm bảo tốc độ hiển thị (kết quả tính toán vẫn chính xác toàn bộ).
-- **Giới hạn `n` động thông minh (Frontend & Backend)**:
-  - **Chế độ Ràng buộc**: `n ≤ 8` (Cần sinh toàn bộ mảng).
-  - **Chế độ Chỉ liệt kê**: `n ≤ 10` (Dùng Generator).
+- ⚠️ **Giới hạn 1000 bước** mô phỏng đầu tiên để đảm bảo tốc độ hiển thị.
+- **Giới hạn `n` động thông minh**:
+  - **Chế độ Ràng buộc**: `n ≤ 8` (Sinh toàn bộ mảng).
+  - **Chế độ Chỉ liệt kê**: `n ≤ 10` (Dùng Unranking).
   - **Chế độ Học từng bước**: `n ≤ 11` (Chỉ sinh 1000 trace).
   - **Chế độ Chỉ đếm**: `n ≤ 12` (Chỉ tính công thức).
 
 ### 3. Xuất dữ liệu CSV (Mở rộng 2)
 
-- Hỗ trợ tải xuống toàn bộ danh sách chỉnh hợp dưới dạng file `.csv`.
-- **Streaming trực tiếp**: Dữ liệu được truyền từng dòng từ Server xuống Client thông qua `Response(generate_csv())`.
-- **Không tốn RAM**: Server không lưu file, không khởi tạo mảng khổng lồ. Hỗ trợ tải mượt mà ngay cả với hàng triệu kết quả. File CSV tương thích hoàn toàn với Excel (đã tích hợp BOM UTF-8).
+- Hỗ trợ tải xuống danh sách chỉnh hợp dưới dạng file `.csv`.
+- **Áp dụng đúng ràng buộc**: File xuất ra sẽ áp dụng điều kiện (A không đầu, B-C không cạnh) nếu người dùng có tick chọn.
+- **Streaming trực tiếp & Chuẩn hóa `csv.writer`**: Dữ liệu được truyền từng dòng, không lưu file vào ổ cứng hay RAM. Định dạng chuẩn, không bị lỗi tách cột khi mở bằng Excel (đã tích hợp BOM UTF-8).
+- **Cơ chế bảo vệ Server (Custom Modal)**: Nếu số dòng vượt quá **2.000.000 dòng**, hệ thống sẽ hiển thị một Modal cảnh báo (được thiết kế đồng bộ với UI) và chặn tải xuống để tránh sập server.
 
 ### 4. Gia sư ảo - Quiz Động (Dynamic Quiz Generator)
 
-- Thay vì các câu hỏi tĩnh, hệ thống tự động **phân tích trạng thái của trace** (mảng x, used, call stack, dòng mã giả) tại một bước ngẫu nhiên để sinh câu hỏi.
+- Tự động **phân tích trạng thái của trace** (mảng x, used, call stack, dòng mã giả) tại một bước ngẫu nhiên để sinh câu hỏi.
 - Hàng ngàn câu hỏi trắc nghiệm khác nhau với độ nhiễu cao.
 - Phản hồi trực quan: Tô xanh đáp án đúng, tô đỏ đáp án sai kèm giải thích chi tiết.
 
@@ -56,7 +57,7 @@ Bản Big Update này tích hợp thêm **Xuất dữ liệu CSV không tốn RA
 
 - Nhấn nút **"Chạy kiểm tra tính đúng"** để chạy bộ test tự động đối chiếu với thư viện chuẩn `itertools`.
 - **Thuật toán so sánh song song (zip_longest)**: Tiêu tốn O(1) RAM thay vì tạo mảng.
-- ⚠️ **Giới hạn `n ≤ 8` cho Validation**: Để đảm bảo không bị Timeout (quá 30 giây) trên server Render Free khi phải đối chiếu hàng triệu phần tử. Nút bấm sẽ tự động ẩn đi khi `n > 8` để báo hiệu cho người dùng.
+- ⚠️ **Giới hạn `n ≤ 8` cho Validation**: Để đảm bảo không bị Timeout (quá 30 giây) trên server Render Free. Nút bấm sẽ tự động ẩn đi khi `n > 8`.
 
 ### 6. Giao diện & Trải nghiệm người dùng (UI/UX)
 
@@ -82,7 +83,7 @@ Bản Big Update này tích hợp thêm **Xuất dữ liệu CSV không tốn RA
 | **Database** | SQLite (Local) / PostgreSQL (Production) |
 | **Testing** | Pytest |
 | **Deployment** | Docker, Docker Compose, GitHub Actions (CI/CD), Render |
-| **Thuật toán** | Backtracking, Next Permutation, Branch & Bound, Generator, `itertools.islice`, `itertools.zip_longest` |
+| **Thuật toán** | Backtracking, Next Permutation, Branch & Bound, Generator, **Unranking**, `csv.writer`, `itertools.zip_longest` |
 
 ---
 
@@ -94,10 +95,10 @@ chinh_hop_app/
 ├── static/
 │   └── style.css               # Toàn bộ CSS (Responsive, Dark/Light Mode, Visualizer...)
 ├── templates/
-│   └── index.html              # Giao diện chính (Visualizer + Dynamic Quiz + Export)
+│   └── index.html              # Giao diện chính (Visualizer + Dynamic Quiz + Export Modal)
 ├── tests/                      # Unit test với Pytest
 ├── app.py                      # Flask server: routes, API, database, phân trang, CSV Stream
-├── logic.py                    # Thuật toán lõi, trace, generator, validation O(1)
+├── logic.py                    # Thuật toán lõi, trace, generator, unranking, validation O(1)
 ├── requirements.txt            # Danh sách thư viện
 ├── Dockerfile                  # Đóng gói ứng dụng
 └── docker-compose.yml          # Cấu hình Docker Compose
@@ -199,24 +200,25 @@ GET /api/verify?n=4&k=2
 ### 3. Xuất dữ liệu CSV (Stream)
 
 ```http
-GET /api/export?n=10&k=2
+GET /api/export?n=10&k=2&co_rang_buoc=0
 ```
 
 Trả về file `.csv` trực tiếp qua luồng (stream).
-**Điều kiện hợp lệ:** `0 ≤ k ≤ n ≤ 12`.
+**Tham số `co_rang_buoc`**: `1` (Áp dụng ràng buộc) hoặc `0` (Không ràng buộc).
+**Điều kiện hợp lệ:** `0 ≤ k ≤ n ≤ 10` và tổng số dòng ≤ 2.000.000.
 
 ---
 
 ## ⚠️ Giới hạn & Lưu ý kỹ thuật
 
-- **Giới hạn `n` linh hoạt**: Hệ thống tự động điều chỉnh giới hạn nhập `n` tùy thuộc vào chế độ được chọn (từ 8 đến 12) nhằm mục đích bảo vệ RAM và thời gian phản hồi của Server.
+- **Giới hạn `n` linh hoạt**: Hệ thống tự động điều chỉnh giới hạn nhập `n` (từ 8 đến 12) tùy thuộc vào chế độ nhằm bảo vệ RAM và thời gian phản hồi của Server Render.
+- **Kỹ thuật Unranking**: Được áp dụng cho chế độ "Chỉ liệt kê" giúp thời gian tải bất kỳ trang nào (từ trang 1 đến trang 70.000) đều chỉ mất `< 1ms`, loại bỏ hoàn toàn điểm yếu của `itertools.islice`.
+- **Giới hạn xuất file CSV**: Hệ thống chặn không cho tải file nếu tổng số dòng vượt quá **2.000.000 dòng**. Lý do là file CSV lúc này sẽ nặng khoảng 50MB, thời gian stream mất ~15 giây, nếu lớn hơn sẽ gây tràn RAM (OOM) server 512MB.
 - **Visualizer giới hạn 1.000 bước** mô phỏng đầu tiên. Nếu cần xem toàn bộ kết quả, dùng chế độ **Chỉ liệt kê**.
 - **Mô phỏng chỉ khả dụng** ở chế độ **Học từng bước** và **không có ràng buộc**.
-- **Quiz section** chỉ xuất hiện khi có trace hợp lệ (chế độ học, không ràng buộc).
-- Ràng buộc mặc định đang được **hard-code** trong `app.py`:
+- **Ràng buộc mặc định**:
   - `not_first: 1` → Phần tử **A** không được đứng đầu.
   - `not_adjacent: (2, 3)` → **B và C** không được đứng cạnh nhau.
-- **Lưu ý khi tải CSV dung lượng lớn**: File CSV có thể lên tới hàng trăm MB. Nên sử dụng Excel hoặc phần mềm chuyên dụng thay vì Notepad để mở.
 
 ---
 

@@ -1,86 +1,100 @@
 import time
-import tracemalloc
 import itertools
-from logic import (lay_phan_tu_cua_trang, sinh_ke_tiep_chinh_hop_generator, 
-                   liet_ke_cat_nhanh, so_chinh_hop)
+import io
+import csv
+import tracemalloc 
+from logic import lay_phan_tu_cua_trang, sinh_ke_tiep_chinh_hop_generator, so_chinh_hop
 
-def test_trang(n, k, page, per_page=50):
-    """
-    So sánh hiệu năng và đối chiếu tính đúng giữa 2 cách:
-    1. Dùng itertools.islice (duyệt tuần tự)
-    2. Dùng Unranking + Sinh kế tiếp
-    """
-    total_items = so_chinh_hop(n, k)
-    total_pages = (total_items + per_page - 1) // per_page
-    start_idx = (page - 1) * per_page
+def do_thoi_gian(func, *args, runs=10):
+    """Đo thời gian chạy, lặp lại 10 lần và lấy trung vị để chính xác"""
+    times = []
+    for _ in range(runs):
+        start = time.perf_counter()
+        func(*args)
+        end = time.perf_counter()
+        times.append((end - start) * 1000)
+    times.sort()
+    return times[len(times) // 2]
+
+def test_trang_va_gioi_han():
+    print("--- KIỂM TRA BIÊN VÀ GIỚI HẠN ---")
     
-    print(f"--- TEST TRANG {page}/{total_pages} (n={n}, k={k}) ---")
-    if start_idx >= total_items:
-        print("-> Trang vượt quá tổng số trang.\n")
-        return
+    # Test lỗi k=0 (Thầy góp ý 2)
+    res_k0 = lay_phan_tu_cua_trang(5, 0, 1)
+    print(f"Test k=0: {res_k0} (Kỳ vọng: [[]])")
+    
+    # Test vượt số trang (Thầy góp ý 1)
+    n, k = 9, 5
+    total = so_chinh_hop(n, k) # 15120
+    total_pages = (total + 49) // 50 # 303 trang
+    page = 303
+    res_303 = lay_phan_tu_cua_trang(n, k, page)
+    print(f"Test n=9, k=5, page={page}: Lấy được {len(res_303)} phần tử (Kỳ vọng: 20)")
+    
+    print("\n--- SO SÁNH THỜI GIAN (Median of 10 runs) ---")
+    for p in [1, 150, total_pages]: # Đầu, giữa, cuối
+        # Đo islice
+        def chay_islice():
+            gen = sinh_ke_tiep_chinh_hop_generator(n, k)
+            list(itertools.islice(gen, (p-1)*50, p*50))
+        t_islice = do_thoi_gian(chay_islice)
+        
+        # Đo unrank
+        t_unrank = do_thoi_gian(lay_phan_tu_cua_trang, n, k, p)
+        
+        print(f"Trang {p:3d}: islice = {t_islice:7.2f} ms | Unrank = {t_unrank:6.2f} ms")
 
-    # CÁCH 1: Dùng islice (Duyệt tuần tự)
+def test_csv_thuc_te():
+    print("\n--- ĐO THỜI GIAN TẠO CSV THỰC TẾ (n=10, k=4) ---")
+    n, k = 10, 4
+    
+    def tao_csv():
+        # Giả lập quá trình tạo CSV giống hệt trong app.py (dùng csv.writer)
+        data = io.StringIO()
+        writer = csv.writer(data)
+        
+        writer.writerow(['STT', 'Chỉnh hợp'])
+        data.seek(0)
+        data.truncate(0)
+        
+        count = 1
+        for day in sinh_ke_tiep_chinh_hop_generator(n, k):
+            day_str = "[" + ", ".join(map(str, day)) + "]"
+            writer.writerow([count, day_str])
+            _ = data.getvalue() # Giả lập yield ra ngoài
+            data.seek(0)
+            data.truncate(0)
+            count += 1
+            
+    t_csv = do_thoi_gian(tao_csv, runs=5)
+    print(f"-> Thời gian tạo luồng CSV: {t_csv:.2f} ms")
+
+def test_ram_tieu_thu():
+    """Hàm đo lượng RAM tiêu thụ (Tách riêng khỏi đo thời gian để đảm bảo độ chính xác)"""
+    print("\n--- ĐO LƯỢNG RAM TIÊU THỤ (Peak Memory) ---")
+    n, k = 9, 5
+    total = so_chinh_hop(n, k)
+    total_pages = (total + 49) // 50
+    page = total_pages # Đo ở trang cuối (trang xa nhất) để thấy rõ sự khác biệt
+
+    # 1. Đo RAM cho islice (duyệt tuần tự)
     tracemalloc.start()
-    start1 = time.perf_counter()
-    
     gen = sinh_ke_tiep_chinh_hop_generator(n, k)
-    res_islice = list(itertools.islice(gen, start_idx, start_idx + per_page))
-    
-    end1 = time.perf_counter()
+    list(itertools.islice(gen, (page-1)*50, page*50))
     _, peak_islice = tracemalloc.get_traced_memory()
     tracemalloc.stop()
-    time_islice = (end1 - start1) * 1000
 
-    # CÁCH 2: Dùng Unranking + Sinh kế tiếp
+    # 2. Đo RAM cho Unranking
     tracemalloc.start()
-    start2 = time.perf_counter()
-    
-    res_unrank = lay_phan_tu_cua_trang(n, k, page, per_page)
-    
-    end2 = time.perf_counter()
+    lay_phan_tu_cua_trang(n, k, page)
     _, peak_unrank = tracemalloc.get_traced_memory()
     tracemalloc.stop()
-    time_unrank = (end2 - start2) * 1000
 
-    # Đối chiếu kết quả
-    is_correct = (res_islice == res_unrank)
-
-    print(f"[Cách 1 - islice]    Thời gian: {time_islice:>8.2f} ms | Peak RAM: {peak_islice / 10**6:.4f} MB")
-    print(f"[Cách 2 - Unranking] Thời gian: {time_unrank:>8.2f} ms | Peak RAM: {peak_unrank / 10**6:.4f} MB")
-    print(f"-> Kết quả 2 cách khớp nhau: {'ĐÚNG' if is_correct else 'SAI LỆCH'}")
-    print("-" * 60 + "\n")
-
-def test_csv(n, k, co_rang_buoc=False):
-    """Đo hiệu năng xuất CSV bằng Generator/Streaming"""
-    print(f"--- XUẤT CSV (n={n}, k={k}, Ràng buộc={co_rang_buoc}) ---")
-    start = time.perf_counter()
-    count = 0
-    if co_rang_buoc:
-        res, _ = liet_ke_cat_nhanh(n, k, {'not_first': 1, 'not_adjacent': (2, 3)})
-        for _ in res: count += 1
-    else:
-        for _ in sinh_ke_tiep_chinh_hop_generator(n, k): count += 1
-    end = time.perf_counter()
-    print(f"-> Thời gian tạo luồng: {(end - start) * 1000:.2f} ms")
-    print(f"-> Số dòng: {count}\n")
+    print(f"Trang {page} (n={n}, k={k}): ")
+    print(f"  -> islice   : Peak RAM = {peak_islice / 1024:.2f} KB")
+    print(f"  -> Unranking: Peak RAM = {peak_unrank / 1024:.2f} KB")
 
 if __name__ == "__main__":
-    # Cấu hình test theo đúng phạm vi thầy cho phép (n <= 10)
-    n, k = 10, 8
-    total_items = so_chinh_hop(n, k)
-    total_pages = (total_items + 49) // 50
-    
-    print(f"=== CẤU HÌNH: n={n}, k={k}, Tổng số hoán vị={total_items}, Tổng số trang={total_pages} ===\n")
-    
-    # 1. Đo trang đầu
-    test_trang(n, k, page=1)
-    
-    # 2. Đo trang xa (Trang giữa)
-    test_trang(n, k, page=total_pages // 2)
-    
-    # 3. Đo trang cuối
-    test_trang(n, k, page=total_pages)
-    
-    # 4. Đo xuất CSV (n=10, k=4 để ko bị quá lớn)
-    test_csv(10, 4, False)      
-    test_csv(8, 4, True)        
+    test_trang_va_gioi_han()
+    test_csv_thuc_te()
+    test_ram_tieu_thu()

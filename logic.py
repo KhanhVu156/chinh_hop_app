@@ -383,12 +383,20 @@ def lay_phan_tu_cua_trang(n, k, page, per_page=50):
     """
     start_idx = (page - 1) * per_page
     total = so_chinh_hop(n, k)
-    if start_idx >= total:
+    
+    # Kiểm tra nếu vượt quá tổng số trang hợp lệ
+    if start_idx >= total or total == 0:
         return []
         
+    # Sửa lỗi theo góp ý của thầy: k=0 phải trả về [[]] thay vì []
+    if k == 0:
+        return [[]]
+
     # 1. Nhảy thẳng đến phần tử đầu tiên của trang
     first_item = unrank_chinh_hop(n, k, start_idx)
-    if not first_item:
+    
+    # Dùng "is None" thay vì "not first_item" vì [] là falsy
+    if first_item is None: 
         return []
         
     result = [first_item]

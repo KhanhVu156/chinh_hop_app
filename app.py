@@ -239,8 +239,9 @@ def api_export():
         k = int(request.args.get('k', 0))
         co_rang_buoc = request.args.get('co_rang_buoc') == '1'
         
-        if n < 0 or k < 0 or k > n:
-            return jsonify({"error": "Tham số không hợp lệ."}), 400
+        # Sửa lỗi 5: Chặn giới hạn n ngay tại API xuất CSV để bảo vệ Server
+        if n < 0 or k < 0 or k > n or n > 12:
+            return jsonify({"error": "Tham số không hợp lệ. Yêu cầu 0 <= k <= n <= 12."}), 400
             
         MAX_ROWS = 2000000
         

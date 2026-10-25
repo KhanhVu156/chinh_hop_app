@@ -1,13 +1,12 @@
 from flask import Flask, render_template, request, jsonify, g, Response
 import sqlite3
-import itertools
 import csv
 import io
-from logic import (so_chinh_hop, liet_ke_chinh_hop, sinh_ke_tiep_chinh_hop, 
+import os
+from logic import (so_chinh_hop, liet_ke_chinh_hop, 
                    liet_ke_chinh_hop_co_trace, liet_ke_cat_nhanh, do_hieu_qua, 
                    kiem_tra_tinh_dung, sinh_ke_tiep_chinh_hop_generator,
                    lay_phan_tu_cua_trang)
-import os
 
 app = Flask(__name__)
 DATABASE = 'history.db'
@@ -82,7 +81,6 @@ def get_pagination_range(current_page, total_pages, window=2):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     ket_qua_de_quy = []
-    ket_qua_sinh = []
     trace_data = []
     trace_truncated = False
     n, k, so_luong = 0, 0, 0
@@ -108,13 +106,9 @@ def index():
             if request.method == 'POST':
                 page = 1
 
-            # Xác định giới hạn n động
+            # Xác định giới hạn n (Tuân thủ đúng lời thầy: n <= 10, riêng ràng buộc n <= 8)
             if co_rang_buoc:
                 max_n = 8
-            elif che_do == 'dem':
-                max_n = 12
-            elif che_do == 'hoc':
-                max_n = 11
             else:
                 max_n = 10
 
@@ -177,7 +171,6 @@ def index():
     return render_template('index.html', 
                            n=n, k=k, so_luong=so_luong, 
                            ket_qua_de_quy=ket_qua_de_quy,
-                           ket_qua_sinh=ket_qua_sinh,
                            trace_data=trace_data,
                            trace_truncated=trace_truncated,
                            lich_su=lich_su,
@@ -196,6 +189,7 @@ def api_permutations():
         n = int(request.args.get('n', 0))
         k = int(request.args.get('k', 0))
         
+        # Giới hạn n <= 8 cho API để tránh quá tải khi trả JSON
         if n < 0 or n > 8 or k < 0 or k > n:
             return jsonify({"error": "Invalid input. Require 0 <= k <= n <= 8."}), 400
             
@@ -232,7 +226,7 @@ def api_verify():
         return jsonify({"error": str(e)}), 500
 
 # ==============================================================================
-# MỞ RỘNG 2: XUẤT CSV BẰNG STREAM (DÙNG CHUẨN csv.writer)
+# XUẤT CSV BẰNG STREAM
 # ==============================================================================
 @app.route('/api/export', methods=['GET'])
 def api_export():

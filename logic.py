@@ -4,11 +4,12 @@ import itertools
 
 # ==============================================================================
 # BÀI TOÁN: LIỆT KÊ CHỈNH HỢP KHÔNG LẶP CHẬP K CỦA N PHẦN TỬ
-# Tư duy: Sử dụng phương pháp Quay lui (Backtracking).
-# - Xây dựng dãy x có k phần tử.
-# - Tại mỗi vị trí i (từ 1 đến k), thử các giá trị từ 1 đến n.
-# - Điều kiện: Giá trị đó chưa được sử dụng (mảng used).
-# - Khi đã điền đủ k vị trí, ta thu được 1 chỉnh hợp.
+# Tư duy giải thuật: 
+# - Đệ quy quay lui (Backtracking): Xây dựng dãy x có k phần tử, mảng used 
+#   đánh dấu. Tại vị trí i, thử các giá trị chưa dùng, gọi đệ quy i+1, 
+#   rồi hoàn tác (backtrack).
+# - Sinh kế tiếp (Next Permutation): Từ cấu hình hiện tại, tìm vị trí phải nhất 
+#   có thể tăng giá trị, sau đó đặt lại hậu tố về giá trị nhỏ nhất.
 # ==============================================================================
 
 def so_chinh_hop(n, k):
@@ -314,13 +315,17 @@ def kiem_tra_tinh_dung(n, k):
     return results
 
 # ==============================================================================
-# MỞ RỘNG SIÊU TỐC: KỸ THUẬT UNRANKING (PHÂN TRANG O(1))
+# MỞ RỘNG SIÊU TỐC: KỸ THUẬT UNRANKING VÀ PHÂN TRANG
 # ==============================================================================
 def unrank_chinh_hop(n, k, index):
     """
     Tư duy Unranking: Truy xuất trực tiếp chỉnh hợp thứ `index` (tính từ 0)
-    bằng toán học. Thay vì dùng islice phải duyệt qua index phần tử,
-    hàm này dùng phép chia lấy dư để nhảy thẳng đến kết quả.
+    bằng toán học thay vì duyệt tuần tự.
+    
+    Độ phức tạp: 
+    - Bỏ qua được chi phí duyệt O(index) cấu hình trước đó.
+    - Tuy nhiên, bản thân hàm tốn O(k*n) do vòng lặp k lần và phép list.pop() tốn O(n).
+    - Do đó, đây KHÔNG phải là O(1) tổng quát, mà là O(k*n) độc lập với index.
     """
     if k == 0: return []
     
@@ -337,7 +342,7 @@ def unrank_chinh_hop(n, k, index):
         chi_so = index // block_size
         index = index % block_size
         
-        val = chua_dung.pop(chi_so)
+        val = chua_dung.pop(chi_so) # Lưu ý: pop() tốn O(n)
         ket_qua.append(val)
         
     return ket_qua
@@ -369,7 +374,13 @@ def sinh_ke_tiep_tu_cau_hinh(n, k, x):
     return x
 
 def lay_phan_tu_cua_trang(n, k, page, per_page=50):
-    """Lấy 50 phần tử của trang bằng Unranking + Sinh kế tiếp."""
+    """
+    Lấy 50 phần tử của trang bằng Unranking + Sinh kế tiếp.
+    Tư duy: 
+    1. Dùng Unranking để nhảy thẳng đến cấu hình đầu tiên của trang.
+    2. Dùng sinh kế tiếp để lấy 49 cấu hình còn lại.
+    => Độ phức tạp: O(k*n + per_page * k*n), không phụ thuộc vào số trang.
+    """
     start_idx = (page - 1) * per_page
     total = so_chinh_hop(n, k)
     if start_idx >= total:
@@ -391,3 +402,24 @@ def lay_phan_tu_cua_trang(n, k, page, per_page=50):
         result.append(current)
         
     return result
+
+def do_hieu_qua_phan_trang(n, k, page, per_page=50):
+    """Hàm đo đạc hiệu năng so sánh giữa islice và Unranking (Dùng cho báo cáo)"""
+    start_idx = (page - 1) * per_page
+    
+    # Cách 1: islice (duyệt tuần tự)
+    start1 = time.perf_counter()
+    gen = sinh_ke_tiep_chinh_hop_generator(n, k)
+    res_islice = list(itertools.islice(gen, start_idx, start_idx + per_page))
+    time_islice = (time.perf_counter() - start1) * 1000
+    
+    # Cách 2: Unranking + Sinh kế tiếp
+    start2 = time.perf_counter()
+    res_unrank = lay_phan_tu_cua_trang(n, k, page, per_page)
+    time_unrank = (time.perf_counter() - start2) * 1000
+    
+    return {
+        "islice_ms": round(time_islice, 4),
+        "unrank_ms": round(time_unrank, 4),
+        "khop_nhau": res_islice == res_unrank
+    }

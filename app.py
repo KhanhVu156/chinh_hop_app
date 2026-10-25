@@ -106,9 +106,13 @@ def index():
             if request.method == 'POST':
                 page = 1
 
-            # Xác định giới hạn n (Tuân thủ đúng lời thầy: n <= 10, riêng ràng buộc n <= 8)
+            # KHÔI PHỤC GIỚI HẠN N ĐỘNG (Bản tối ưu chạy mượt)
             if co_rang_buoc:
                 max_n = 8
+            elif che_do == 'dem':
+                max_n = 12
+            elif che_do == 'hoc':
+                max_n = 11
             else:
                 max_n = 10
 

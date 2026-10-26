@@ -325,10 +325,13 @@ def unrank_chinh_hop(n, k, index):
     Độ phức tạp: 
     - Bỏ qua được chi phí duyệt O(index) cấu hình trước đó.
     - Tuy nhiên, bản thân hàm tốn O(k*n) do vòng lặp k lần và phép list.pop() tốn O(n).
-    - Do đó, đây KHÔNG phải là O(1) tổng quát, mà là O(k*n) độc lập với index.
     """
     if k == 0: return []
     
+    # Góp ý 3: Kiểm tra rank ngoài phạm vi (âm hoặc vượt quá A(n,k))
+    if index < 0 or index >= so_chinh_hop(n, k):
+        return None
+        
     chua_dung = list(range(1, n + 1))
     ket_qua = []
     
@@ -379,8 +382,11 @@ def lay_phan_tu_cua_trang(n, k, page, per_page=50):
     Tư duy: 
     1. Dùng Unranking để nhảy thẳng đến cấu hình đầu tiên của trang.
     2. Dùng sinh kế tiếp để lấy 49 cấu hình còn lại.
-    => Độ phức tạp: O(k*n + per_page * k*n), không phụ thuộc vào số trang.
     """
+    # Góp ý 3: Chặn các tham số trang và kích thước trang không hợp lệ
+    if page <= 0 or per_page <= 0:
+        return []
+
     start_idx = (page - 1) * per_page
     total = so_chinh_hop(n, k)
     
@@ -388,7 +394,7 @@ def lay_phan_tu_cua_trang(n, k, page, per_page=50):
     if start_idx >= total or total == 0:
         return []
         
-    # Sửa lỗi theo góp ý của thầy: k=0 phải trả về [[]] thay vì []
+    # Sửa lỗi theo góp ý trước của thầy: k=0 phải trả về [[]] thay vì []
     if k == 0:
         return [[]]
 

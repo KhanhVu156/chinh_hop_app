@@ -239,9 +239,15 @@ def api_export():
         k = int(request.args.get('k', 0))
         co_rang_buoc = request.args.get('co_rang_buoc') == '1'
         
-        # Sửa lỗi 5: Chặn giới hạn n ngay tại API xuất CSV để bảo vệ Server
-        if n < 0 or k < 0 or k > n or n > 12:
-            return jsonify({"error": "Tham số không hợp lệ. Yêu cầu 0 <= k <= n <= 12."}), 400
+        # Tư duy: Chặn các tham số cơ bản không hợp lệ
+        if n < 0 or k < 0 or k > n:
+            return jsonify({"error": "Tham số không hợp lệ. Yêu cầu 0 <= k <= n."}), 400
+            
+        # Góp ý 2: Chặn giới hạn n dựa trên chế độ có/không có ràng buộc
+        if co_rang_buoc and n > 8:
+            return jsonify({"error": "Chế độ ràng buộc chỉ hỗ trợ n <= 8."}), 400
+        if not co_rang_buoc and n > 12:
+            return jsonify({"error": "Tham số không hợp lệ. Chế độ thường yêu cầu n <= 12."}), 400
             
         MAX_ROWS = 2000000
         

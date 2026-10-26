@@ -410,9 +410,10 @@
       }
 
       function confirmCSVDownload() {
+          const url = csvDownloadUrl; // Góp ý 1: Lưu lại URL trước khi đóng
           closeCSVModal();
-          if (csvDownloadUrl) {
-              window.location.href = csvDownloadUrl;
+          if (url) {
+              window.location.href = url;
           }
       }
 

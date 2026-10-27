@@ -79,6 +79,23 @@ def test_kiem_tra_bien_voi_assert():
     print(f"Ca 7 (unrank index={total}): Actual = {res_unrank_vuot}, Expected = None")
     assert res_unrank_vuot is None, f"Lỗi ca 7: Index vượt quá {total} phải trả về None"
     
+    # -------------------------------------------------------------------------
+    # Ca 8: Unranking với k=0 và chỉ số (index) âm
+    # Mục đích: Theo góp ý của thầy, k=0 thì A(n,0)=1 nên chỉ index=0 là hợp lệ.
+    # Các index âm phải bị chặn và trả về None (thay vì trả về []).
+    # -------------------------------------------------------------------------
+    res_unrank_k0_am = unrank_chinh_hop(5, 0, -1)
+    print(f"Ca 8 (unrank k=0, index=-1): Actual = {res_unrank_k0_am}, Expected = None")
+    assert res_unrank_k0_am is None, "Lỗi ca 8: k=0, index âm phải trả về None"
+
+    # -------------------------------------------------------------------------
+    # Ca 9: Unranking với k=0 và chỉ số (index) vượt quá (index=1)
+    # Mục đích: Tương tự ca 8, với k=0, index lớn hơn 0 phải trả về None.
+    # -------------------------------------------------------------------------
+    res_unrank_k0_vuot = unrank_chinh_hop(5, 0, 1)
+    print(f"Ca 9 (unrank k=0, index=1): Actual = {res_unrank_k0_vuot}, Expected = None")
+    assert res_unrank_k0_vuot is None, "Lỗi ca 9: k=0, index vượt quá phải trả về None"
+    
     print("-> TẤT CẢ CÁC CA KIỂM TRA BIÊN ĐỀU PASS!\n")
 
 def test_hieu_nang():

@@ -1,6 +1,4 @@
-﻿Dưới đây là nội dung file `README.md` đã được chỉnh sửa đúng ý thầy. Bạn có thể bôi đen và copy trực tiếp đoạn văn bản bên dưới (không có code block) để dán đè vào file của bạn nhé:
-
-# 🎯 Chinh Hop Visualizer App (DT035)
+﻿# 🎯 Chinh Hop Visualizer App (DT035)
 
 > **Đồ án môn học Cấu trúc Dữ liệu và Giải thuật (INT13185)**  
 > Học viện Công nghệ Bưu chính Viễn thông (PTIT)  

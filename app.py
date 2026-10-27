@@ -3,6 +3,14 @@ import sqlite3
 import csv
 import io
 import os
+
+# NÂNG CẤP: Thư viện Cache phân tán và Quản lý biến môi trường
+from flask_caching import Cache
+from dotenv import load_dotenv
+
+# Tự động nạp các biến từ file .env (chứa link Redis Upstash)
+load_dotenv()
+
 from logic import (so_chinh_hop, liet_ke_chinh_hop, 
                    liet_ke_chinh_hop_co_trace, liet_ke_cat_nhanh, do_hieu_qua, 
                    kiem_tra_tinh_dung, sinh_ke_tiep_chinh_hop_generator,
@@ -12,7 +20,31 @@ app = Flask(__name__)
 DATABASE = 'history.db'
 
 # ==============================================================================
-# QUẢN LÝ DATABASE
+# TƯ DUY KIẾN TRÚC: PHÂN TÁN BỘ NHỚ ĐỆM (DISTRIBUTED CACHING)
+# - Mục tiêu: Giảm tải CPU cho Server khi nhiều user request cùng lúc.
+# - Sử dụng Redis (Cloud) để lưu kết quả. Nếu mất kết nối Redis, tự động 
+#   fallback về SimpleCache (RAM) để không làm sập ứng dụng.
+# ==============================================================================
+redis_url = os.environ.get('REDIS_URL')
+
+try:
+    if redis_url:
+        app.config['CACHE_TYPE'] = 'RedisCache'
+        app.config['CACHE_REDIS_URL'] = redis_url
+        app.config['CACHE_DEFAULT_TIMEOUT'] = 600 # Cache tồn tại 10 phút
+        cache = Cache(app)
+        # Thử ping để kiểm tra kết nối tới Upstash
+        cache.cache._write_client.ping() 
+        print("✅ Đã kết nối thành công tới Redis Upstash!")
+    else:
+        raise ValueError("Không tìm thấy biến REDIS_URL")
+except Exception as e:
+    print(f"⚠️ Cảnh báo: Không thể kết nối Redis ({e}). Chuyển sang dùng RAM (SimpleCache).")
+    app.config['CACHE_TYPE'] = 'SimpleCache'
+    cache = Cache(app)
+
+# ==============================================================================
+# QUẢN LÝ DATABASE SQLITE
 # ==============================================================================
 def get_db():
     db = getattr(g, '_database', None)
@@ -44,7 +76,7 @@ if not os.path.exists(DATABASE):
 def luu_lich_su(n, k, so_luong, co_rang_buoc, che_do):
     db = get_db()
     try:
-        # Tư duy: Cố gắng nâng cấp cấu trúc bảng nếu DB cũ chưa có các cột này
+        # Tư duy: Nâng cấp schema nếu DB cũ chưa có cột
         db.execute('ALTER TABLE history ADD COLUMN co_rang_buoc INTEGER DEFAULT 0')
         db.execute('ALTER TABLE history ADD COLUMN che_do TEXT DEFAULT "hoc"')
     except sqlite3.OperationalError:
@@ -55,9 +87,11 @@ def luu_lich_su(n, k, so_luong, co_rang_buoc, che_do):
     db.commit()
 
 # ==============================================================================
-# HÀM TÍNH DẢI PHÂN TRANG THÔNG MINH
+# THUẬT TOÁN PHÂN TRANG THÔNG MINH
 # ==============================================================================
 def get_pagination_range(current_page, total_pages, window=2):
+    # Tư duy: Nếu tổng số trang ít, hiển thị toàn bộ. 
+    # Nếu nhiều, chỉ hiển thị các trang xung quanh (window) + trang đầu/cuối.
     if total_pages <= (window * 2) + 5:
         return range(1, total_pages + 1)
         
@@ -72,12 +106,21 @@ def get_pagination_range(current_page, total_pages, window=2):
     result = []
     for i, p in enumerate(sorted_pages):
         if i > 0 and p - sorted_pages[i-1] > 1:
-            result.append("...")
+            result.append("...") # Chèn dấu ... nếu có khoảng trống
         result.append(p)
     return result
 
 # ==============================================================================
-# LUỒNG XỬ LÝ CHÍNH
+# TƯ DUY CACHE LỚP LOGIC: BỌC HÀM TÍNH TOÁN NẶNG BẰNG MEMOIZE
+# - Hàm `lay_phan_tu_cua_trang` dùng kỹ thuật Unranking, tốn O(k*n) để tính.
+# - Sử dụng `memoize` để lưu kết quả theo bộ tham số (n, k, page, per_page).
+# ==============================================================================
+@cache.memoize(timeout=600)
+def get_cached_page_data(n, k, page, per_page):
+    return lay_phan_tu_cua_trang(n, k, page, per_page)
+
+# ==============================================================================
+# LUỒNG XỬ LÝ CHÍNH (CONTROLLER)
 # ==============================================================================
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -107,7 +150,7 @@ def index():
             if request.method == 'POST':
                 page = 1
 
-            # KHÔI PHỤC GIỚI HẠN N ĐỘNG (Bản tối ưu chạy mượt)
+            # Tư duy: Giới hạn n động để bảo vệ RAM server khỏi bị OOM (Out Of Memory)
             if co_rang_buoc:
                 max_n = 8
             elif che_do == 'dem':
@@ -117,6 +160,7 @@ def index():
             else:
                 max_n = 10
 
+            # Validate tham số đầu vào
             if n < 0:
                 error = "Vui lòng nhập n là số nguyên không âm."
             elif n > max_n:
@@ -132,6 +176,7 @@ def index():
                     so_sanh = do_hieu_qua(n, k, rang_buoc)
                     trace_data = []
                     
+                    # Chuyển đổi index sang ký tự (A, B, C...) để dễ nhìn
                     chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                     full_de_quy = [[chars[v-1] for v in day] for day in full_de_quy]
 
@@ -141,6 +186,7 @@ def index():
                     ket_qua_de_quy = full_de_quy[start_idx:end_idx]
 
                 elif che_do == 'hoc':
+                    # Tư duy: Chỉ mô phỏng tối đa 1000 bước để tránh treo trình duyệt
                     _, trace_data = liet_ke_chinh_hop_co_trace(n, k, max_steps=1000)
                     ket_qua_de_quy = []
                     total_pages = 1
@@ -152,9 +198,9 @@ def index():
                     total_pages = 1
 
                 else:  # che_do == 'liet_ke'
-                    # Sử dụng Unranking: Nhảy trực tiếp đến trang cần xem
                     total_pages = max(1, (so_luong + per_page - 1) // per_page)
-                    ket_qua_de_quy = lay_phan_tu_cua_trang(n, k, page, per_page)
+                    # TƯ DUY: Sử dụng hàm đã được bọc Cache thay vì gọi trực tiếp logic
+                    ket_qua_de_quy = get_cached_page_data(n, k, page, per_page)
 
                 if request.method == 'POST':
                     luu_lich_su(n, k, so_luong, co_rang_buoc, che_do)
@@ -167,6 +213,7 @@ def index():
 
     page_range = get_pagination_range(page, total_pages)
 
+    # Lấy lịch sử gần đây
     db = get_db()
     try:
         lich_su = db.execute('SELECT * FROM history ORDER BY id DESC LIMIT 5').fetchall()
@@ -186,15 +233,18 @@ def index():
                            che_do=che_do)
 
 # ==============================================================================
-# RESTFUL API 
+# RESTFUL API (TÍCH HỢP REDIS CACHE)
 # ==============================================================================
+# TƯ DUY: @cache.cached(query_string=True) sẽ lưu nguyên cục JSON trả về.
+# Lần sau nếu gọi đúng URL đó, lấy thẳng từ Redis trả ra luôn (tốc độ < 2ms).
+
 @app.route('/api/permutations', methods=['GET'])
+@cache.cached(query_string=True, timeout=600)
 def api_permutations():
     try:
         n = int(request.args.get('n', 0))
         k = int(request.args.get('k', 0))
         
-        # Giới hạn n <= 8 cho API để tránh quá tải khi trả JSON
         if n < 0 or n > 8 or k < 0 or k > n:
             return jsonify({"error": "Invalid input. Require 0 <= k <= n <= 8."}), 400
             
@@ -212,6 +262,7 @@ def api_permutations():
         return jsonify({"error": "Invalid parameter type."}), 400
 
 @app.route('/api/verify', methods=['GET'])
+@cache.cached(query_string=True, timeout=600)
 def api_verify():
     try:
         n = int(request.args.get('n', 0))
@@ -231,8 +282,11 @@ def api_verify():
         return jsonify({"error": str(e)}), 500
 
 # ==============================================================================
-# XUẤT CSV BẰNG STREAM
+# XUẤT CSV BẰNG STREAM (STREAMING RESPONSE)
 # ==============================================================================
+# TƯ DUY: Không thể cache API này vì file có thể lên tới hàng triệu dòng.
+# Sử dụng Generator (yield) để gửi từng dòng CSV về client, giảm RAM tối đa.
+
 @app.route('/api/export', methods=['GET'])
 def api_export():
     try:
@@ -240,11 +294,9 @@ def api_export():
         k = int(request.args.get('k', 0))
         co_rang_buoc = request.args.get('co_rang_buoc') == '1'
         
-        # Tư duy: Chặn các tham số cơ bản không hợp lệ
         if n < 0 or k < 0 or k > n:
             return jsonify({"error": "Tham số không hợp lệ. Yêu cầu 0 <= k <= n."}), 400
             
-        # Góp ý 2: Chặn giới hạn n dựa trên chế độ có/không có ràng buộc
         if co_rang_buoc and n > 8:
             return jsonify({"error": "Chế độ ràng buộc chỉ hỗ trợ n <= 8."}), 400
         if not co_rang_buoc and n > 12:
@@ -252,7 +304,6 @@ def api_export():
             
         MAX_ROWS = 2000000
         
-        # Lấy dữ liệu tương ứng với ràng buộc
         if co_rang_buoc:
             rang_buoc = {'not_first': 1, 'not_adjacent': (2, 3)}
             full_res, _ = liet_ke_cat_nhanh(n, k, rang_buoc)

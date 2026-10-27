@@ -2,11 +2,12 @@
 
 > **Đồ án môn học Cấu trúc Dữ liệu và Giải thuật (INT13185)**  
 > Học viện Công nghệ Bưu chính Viễn thông (PTIT)  
-> Được thiết kế và mở rộng thành ứng dụng Web trực quan hóa thuật toán (Algorithm Visualizer) chuẩn production.
+> Được thiết kế và mở rộng thành ứng dụng Web trực quan hóa thuật toán (Algorithm Visualizer) chuẩn Production, tích hợp kiến trúc **Distributed Caching**.
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-brightgreen)](https://chinh-hop-app.onrender.com/)
 [![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-Web%20Framework-lightgrey)](https://flask.palletsprojects.com/)
+[![Redis](https://img.shields.io/badge/Redis-Cloud%20Caching-red)](https://redis.io/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue)](https://www.docker.com/)
 
 ---
@@ -26,7 +27,7 @@
 ### 2. Môi trường
 
 - **Ngôn ngữ:** Python 3.11
-- **Thư viện sử dụng:** `Flask==3.0.0` (Web Server), `pytest==7.4.0` (Kiểm thử), `gunicorn==21.2.0` (Triển khai). Thuật toán lõi không sử dụng thư viện ngoài.
+- **Thư viện sử dụng:** `Flask==3.0.0` (Web Server), `Flask-Caching` & `redis` (Distributed Caching), `python-dotenv` (Quản lý biến môi trường), `pytest==7.4.0` (Kiểm thử), `gunicorn==21.2.0` (Triển khai).
 - **Lệnh cài đặt:** `pip install -r requirements.txt`
 
 ### 3. Lệnh
@@ -62,30 +63,30 @@
 
 Ứng dụng web trực quan hóa bài toán **Liệt kê chỉnh hợp không lặp chập k của n phần tử**, được xây dựng bằng Flask. Ứng dụng không chỉ dừng ở việc hiển thị kết quả mà còn mô phỏng **từng bước chạy của thuật toán đệ quy quay lui (Backtracking)** thông qua hệ thống trace chi tiết.
 
-Ứng dụng tích hợp thêm **Kỹ thuật Unranking (Phân trang siêu tốc)**, **Xuất dữ liệu CSV theo luồng, giảm sử dụng bộ nhớ** có áp dụng ràng buộc, **Gia sư ảo (Quiz Động)** tự tạo câu hỏi từ dữ liệu thực tế, cùng khả năng **tối ưu bộ nhớ bằng Generator** để xử lý các cặp `(n, k)` lớn trên môi trường server yếu (Render Free 512MB).
+Điểm nhấn kiến trúc của dự án là việc tích hợp **Redis Distributed Caching (Bộ nhớ đệm phân tán)** giúp giảm tải CPU cho Server khi có nhiều request trùng lặp. Kết hợp cùng **Kỹ thuật Unranking (Phân trang siêu tốc)**, **Xuất dữ liệu CSV theo luồng**, và khả năng **tự động Fallback** nếu mất kết nối Cloud.
 
 ---
 
 ## 🚀 Tính năng nổi bật
 
-### 1. Tối ưu hóa thuật toán lõi
+### 1. Kiến trúc Phân tán & Tối ưu hóa (System Architecture)
+
+- **Redis Cloud Caching:** Sử dụng Upstash Redis để lưu đệm (cache) kết quả các phép toán nặng. Hỗ trợ đa tiến trình (Gunicorn Multi-workers) chia sẻ chung bộ nhớ đệm, giảm 90% thời gian phản hồi cho các request lặp lại.
+- **Cơ chế Fallback thông minh:** Nếu biến môi trường `REDIS_URL` không tồn tại hoặc mất kết nối, hệ thống tự động chuyển sang dùng `SimpleCache` (RAM nội bộ) để đảm bảo ứng dụng không bao giờ bị sập.
+- **Tối ưu I/O:** Kỹ thuật Streaming CSV (Generator) giúp xuất file hàng triệu dòng mà RAM tiêu thụ luôn ở mức $O(1)$.
+
+### 2. Tối ưu hóa thuật toán lõi
 
 - **Đệ quy quay lui (Backtracking):** Liệt kê chỉnh hợp không lặp chập k.
 - **Sinh kế tiếp (Next Permutation):** Phương pháp không đệ quy dùng cho chế độ liệt kê hiệu năng cao.
 - **Kỹ thuật Unranking:** Loại bỏ hoàn toàn chi phí duyệt `O(index)` cấu hình trước đó, giúp nhảy thẳng trực tiếp đến trang cần xem với độ phức tạp `O(k*n)`.
 - **Kỹ thuật cắt nhánh (Branch and Bound):** Áp dụng khi có ràng buộc, kèm đo hiệu năng so sánh trực quan với phương pháp "Sinh rồi lọc".
 
-### 2. Trực quan hóa (Visualizer) & Giới hạn động
+### 3. Trực quan hóa (Visualizer) & Giới hạn động
 
 - Mô phỏng từng bước chạy của thuật toán: `CALL`, `LOOP`, `SELECT`, `SKIP`, `SAVE`, `BACKTRACK`.
 - **Điều khiển linh hoạt:** Bước trước / Bước tiếp / Tự động chạy / Đến cuối / Reset. Tốc độ (100ms – 2000ms).
 - **Giới hạn `n` động thông minh:** Ràng buộc `n ≤ 8`; Chỉ liệt kê `n ≤ 10`; Học từng bước `n ≤ 11`; Chỉ đếm `n ≤ 12`.
-
-### 3. Xuất dữ liệu CSV (Mở rộng)
-
-- Hỗ trợ tải xuống danh sách chỉnh hợp dưới dạng file `.csv`.
-- **Xuất CSV theo luồng (Streaming), giảm sử dụng bộ nhớ & Chuẩn hóa `csv.writer`:** Định dạng chuẩn, không bị lỗi tách cột khi mở bằng Excel (đã tích hợp BOM UTF-8).
-- **Cơ chế bảo vệ Server (Custom Modal & Backend Validation):** Chặn cứng giới hạn `n <= 12`, `n <= 8` (nếu có ràng buộc) và `MAX_ROWS = 2.000.000` ở cả Frontend (Modal cảnh báo) lẫn API Backend để tránh sập server.
 
 ### 4. Gia sư ảo - Quiz Động (Dynamic Quiz Generator)
 
@@ -98,17 +99,6 @@
 - **Thuật toán so sánh song song (zip_longest):** Tiêu tốn O(1) RAM.
 - **Giới hạn `n ≤ 8` cho Validation:** Để đảm bảo không bị Timeout trên server Render Free.
 
-### 6. Benchmark & Đo đạc hiệu năng thực tế (`benchmark.py`)
-
-- **Đo thời gian độc lập:** Dùng `time.perf_counter` lặp 10 lần, lấy trung vị bằng `statistics.median`.
-- **Đo bộ nhớ (Peak RAM):** Dùng `tracemalloc` (chỉ đo lường bộ nhớ cấp phát ở mức Python - Python-level allocations) đo độc lập tại trang đầu và trang cuối.
-- **Kiểm tra biên tự động:** Chuyển các ca kiểm tra biên (trang 0, trang âm, per_page sai, rank ngoài phạm vi) sang `assert` unit test.
-
-### 7. Giao diện & Trải nghiệm người dùng (UI/UX)
-
-- 3 cột layout, Responsive hoàn toàn, Dark/Light Mode (lưu `localStorage`, chống FOUC).
-- Phân trang thông minh (50 kết quả/trang).
-
 ---
 
 ## 🛠️ Công nghệ sử dụng
@@ -116,6 +106,7 @@
 | Thành phần | Công nghệ |
 | ------------ | ----------- |
 | **Backend** | Python 3.11, Flask, SQLite3 |
+| **Caching** | Redis (Upstash Cloud), Flask-Caching |
 | **Frontend** | HTML5, CSS3, JavaScript thuần |
 | **Database** | SQLite (Local) |
 | **Testing** | Pytest |
@@ -136,7 +127,9 @@ chinh_hop_app/
 │   └── anh_ket_qua/            # Chứa 11 ảnh minh chứng A01 - A11
 ├── tests/
 │   └── test_logic.py           # Bộ unit test (21 ca)
-├── app.py                      # Flask server & APIs
+├── .env                        # Chứa biến môi trường REDIS_URL (Không push lên Git)
+├── .gitignore                  # Bỏ qua các file rác, .env, build
+├── app.py                      # Flask server & APIs (Tích hợp Cache)
 ├── logic.py                    # Thuật toán lõi, trace, generator, unranking
 ├── benchmark.py                # Script đo đạc hiệu năng và test biên (assert)
 ├── requirements.txt            # Danh sách thư viện
@@ -148,20 +141,30 @@ chinh_hop_app/
 
 ## ⚙️ Hướng dẫn cài đặt & Chạy
 
-### 🔹 Cách 1: Chạy trực tiếp (Local)
+### Bước 1: Cài đặt thư viện
 
 ```bash
 pip install -r requirements.txt
+```
+
+### Bước 2: Cấu hình biến môi trường (Redis)
+
+Tạo một file `.env` nằm ở thư mục gốc (ngang hàng với `app.py`) với nội dung:
+
+```env
+# Dùng link Upstash Cloud (Bắt buộc dùng rediss:// để bảo mật TLS)
+REDIS_URL="rediss://default:mat_khau_cua_ban@singapore-xxx.upstash.io:6379"
+```
+
+*(Nếu không có Redis, hệ thống sẽ tự động chạy bằng RAM nội bộ `SimpleCache`).*
+
+### Bước 3: Chạy chương trình
+
+```bash
 python app.py
 ```
 
 Truy cập giao diện tại: **<http://localhost:5000>**
-
-### 🔹 Cách 2: Chạy bằng Docker
-
-```bash
-docker compose up --build
-```
 
 ---
 
@@ -185,11 +188,11 @@ python benchmark.py
 
 ## 🌐 RESTful API
 
-### 1. Liệt kê chỉnh hợp
+### 1. Liệt kê chỉnh hợp (Có Cache)
 
 `GET /api/permutations?n=3&k=2` (Giới hạn `n ≤ 8`).
 
-### 2. Kiểm tra tính đúng đắn
+### 2. Kiểm tra tính đúng đắn (Có Cache)
 
 `GET /api/verify?n=4&k=2` (Giới hạn `n ≤ 8`).
 

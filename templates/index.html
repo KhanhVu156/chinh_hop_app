@@ -23,17 +23,28 @@
             background: rgba(0, 0, 0, 0.6); z-index: 9999;
             display: flex; justify-content: center; align-items: center;
             backdrop-filter: blur(3px);
+            padding: 15px; /* Thêm padding để không sát mép mobile */
         }
         .csv-modal-box {
             background: var(--bg-panel); padding: 25px; border-radius: 8px;
-            max-width: 400px; width: 90%; text-align: center;
+            max-width: 400px; width: 100%; text-align: center;
             border: 1px solid var(--border-color);
             box-shadow: 0 10px 25px var(--shadow-color);
         }
         .csv-modal-title { color: var(--warning-color); margin-bottom: 15px; font-size: 18px; font-weight: bold; }
         .csv-modal-message { color: var(--text-main); margin-bottom: 25px; line-height: 1.5; font-size: 15px; }
-        .csv-modal-actions { display: flex; gap: 12px; justify-content: center; }
-        .csv-modal-actions .btn-control { min-width: 120px; flex: none; }
+        .csv-modal-actions { 
+            display: flex; 
+            gap: 12px; 
+            justify-content: center; 
+            flex-wrap: wrap; /* Cho phép rớt dòng trên màn hình quá hẹp */
+        }
+        .csv-modal-actions .btn-control { 
+            min-width: 130px; 
+            flex: 1; 
+            min-height: 44px; /* Đảm bảo kích thước chạm tối thiểu 44px */
+            padding: 10px;
+        }
     </style>
     <script>
         // Script chống nháy màu khi tải trang (FOUC)

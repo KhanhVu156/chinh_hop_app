@@ -44,6 +44,7 @@ if not os.path.exists(DATABASE):
 def luu_lich_su(n, k, so_luong, co_rang_buoc, che_do):
     db = get_db()
     try:
+        # Tư duy: Cố gắng nâng cấp cấu trúc bảng nếu DB cũ chưa có các cột này
         db.execute('ALTER TABLE history ADD COLUMN co_rang_buoc INTEGER DEFAULT 0')
         db.execute('ALTER TABLE history ADD COLUMN che_do TEXT DEFAULT "hoc"')
     except sqlite3.OperationalError:

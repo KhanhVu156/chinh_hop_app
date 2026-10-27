@@ -326,12 +326,16 @@ def unrank_chinh_hop(n, k, index):
     - Bỏ qua được chi phí duyệt O(index) cấu hình trước đó.
     - Tuy nhiên, bản thân hàm tốn O(k*n) do vòng lặp k lần và phép list.pop() tốn O(n).
     """
-    if k == 0: return []
-    
-    # Góp ý 3: Kiểm tra rank ngoài phạm vi (âm hoặc vượt quá A(n,k))
+    # TƯ DUY SỬA LỖI (Theo góp ý của thầy): 
+    # Phải kiểm tra tính hợp lệ của index (rank) TRƯỚC KHI xét điều kiện biên k=0.
+    # Với k=0, hệ chỉ có đúng 1 cấu hình duy nhất là mảng rỗng [], tương ứng index=0.
+    # Nếu index âm hoặc index >= A(n,k) (với k=0 thì A(n,0)=1), lập tức trả về None.
     if index < 0 or index >= so_chinh_hop(n, k):
         return None
-        
+
+    if k == 0: 
+        return []
+    
     chua_dung = list(range(1, n + 1))
     ket_qua = []
     

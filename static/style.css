@@ -841,3 +841,23 @@ input:checked+.slider:before {
         padding-bottom: 20px;
     }
 }
+
+/* BỔ SUNG THEO GÓP Ý CỦA THẦY: Xử lý Header trên thiết bị di động (Mobile/Tablet nhỏ) */
+@media (max-width: 768px) {
+    .app-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 15px;
+    }
+
+    .header-title {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .header-author {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

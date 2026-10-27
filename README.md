@@ -62,7 +62,7 @@
 
 Ứng dụng web trực quan hóa bài toán **Liệt kê chỉnh hợp không lặp chập k của n phần tử**, được xây dựng bằng Flask. Ứng dụng không chỉ dừng ở việc hiển thị kết quả mà còn mô phỏng **từng bước chạy của thuật toán đệ quy quay lui (Backtracking)** thông qua hệ thống trace chi tiết.
 
-Ứng dụng tích hợp thêm **Kỹ thuật Unranking (Phân trang siêu tốc)**, **Xuất dữ liệu CSV không tốn RAM có áp dụng ràng buộc**, **Gia sư ảo (Quiz Động)** tự tạo câu hỏi từ dữ liệu thực tế, cùng khả năng **tối ưu bộ nhớ bằng Generator** để xử lý các cặp `(n, k)` lớn trên môi trường server yếu (Render Free 512MB).
+Ứng dụng tích hợp thêm **Kỹ thuật Unranking (Phân trang siêu tốc)**, **Xuất dữ liệu CSV theo luồng, giảm sử dụng bộ nhớ** có áp dụng ràng buộc, **Gia sư ảo (Quiz Động)** tự tạo câu hỏi từ dữ liệu thực tế, cùng khả năng **tối ưu bộ nhớ bằng Generator** để xử lý các cặp `(n, k)` lớn trên môi trường server yếu (Render Free 512MB).
 
 ---
 
@@ -84,7 +84,7 @@
 ### 3. Xuất dữ liệu CSV (Mở rộng)
 
 - Hỗ trợ tải xuống danh sách chỉnh hợp dưới dạng file `.csv`.
-- **Streaming trực tiếp & Chuẩn hóa `csv.writer`:** Định dạng chuẩn, không bị lỗi tách cột khi mở bằng Excel (đã tích hợp BOM UTF-8).
+- **Xuất CSV theo luồng (Streaming), giảm sử dụng bộ nhớ & Chuẩn hóa `csv.writer`:** Định dạng chuẩn, không bị lỗi tách cột khi mở bằng Excel (đã tích hợp BOM UTF-8).
 - **Cơ chế bảo vệ Server (Custom Modal & Backend Validation):** Chặn cứng giới hạn `n <= 12`, `n <= 8` (nếu có ràng buộc) và `MAX_ROWS = 2.000.000` ở cả Frontend (Modal cảnh báo) lẫn API Backend để tránh sập server.
 
 ### 4. Gia sư ảo - Quiz Động (Dynamic Quiz Generator)
@@ -101,7 +101,7 @@
 ### 6. Benchmark & Đo đạc hiệu năng thực tế (`benchmark.py`)
 
 - **Đo thời gian độc lập:** Dùng `time.perf_counter` lặp 10 lần, lấy trung vị bằng `statistics.median`.
-- **Đo bộ nhớ (Peak RAM):** Dùng `tracemalloc` đo độc lập tại trang đầu và trang cuối.
+- **Đo bộ nhớ (Peak RAM):** Dùng `tracemalloc` (chỉ đo lường bộ nhớ cấp phát ở mức Python - Python-level allocations) đo độc lập tại trang đầu và trang cuối.
 - **Kiểm tra biên tự động:** Chuyển các ca kiểm tra biên (trang 0, trang âm, per_page sai, rank ngoài phạm vi) sang `assert` unit test.
 
 ### 7. Giao diện & Trải nghiệm người dùng (UI/UX)

@@ -217,10 +217,6 @@ python benchmark.py
 
 👉 **<https://chinh-hop-app.onrender.com/>**
 
-> 💡 **Duy trì trạng thái Server (UptimeRobot):** Do ứng dụng được host trên **Render Free Tier (512MB RAM)**, server sẽ tự động "ngủ đông" (Spin down) nếu không có truy cập trong 15 phút. Hệ thống đã được tích hợp dịch vụ **UptimeRobot** (ping định kỳ mỗi 10-14 phút) để giữ server luôn "thức", đảm bảo trải nghiệm Live Demo luôn sẵn sàng.
-
----
-
 ## 👨‍💻 Tác giả
 
 | Thông tin | Chi tiết |

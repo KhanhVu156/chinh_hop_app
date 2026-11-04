@@ -1,0 +1,7 @@
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app # Mount thư mục hiện tại vào container để code thay đổi là web tự cập nhật (chế độ dev)

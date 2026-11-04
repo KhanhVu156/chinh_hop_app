@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.class
+venv/
+.venv/
+env/
+
+# Database
+*.db
+*.sqlite3
+
+# Docker
+node_modules/
+
+# Môi trường & IDE
+.env
+.vscode/
+.DS_Store

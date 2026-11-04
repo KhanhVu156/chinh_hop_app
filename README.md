@@ -54,7 +54,7 @@
 
 - **Thư mục ảnh:** `docs/anh_ket_qua/` (Chứa đủ 11 ảnh minh chứng từ A01 đến A11).
 - **Mã ca kiểm thử & Kết quả:** Chi tiết tại Chương 4 (Bảng 4.1, 4.2) trong file `BaoCao.docx`.
-- **SHA chạy C (Commit tạo ra kết quả test):** `[d1a0b4948cdec253ab7c28a699872d13cda5e320]`
+- **SHA chạy C (Commit tạo ra kết quả test):** `[c717343accf4aa32cec2dd37c2b1a3bf6a01c3b7]`
 - **SHA nộp S (Commit cuối cùng):** Ghi chú chi tiết trong tệp `ThongTinNop.txt` nộp kèm trên Classroom.
 
 ---
